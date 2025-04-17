@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Emu6502
+﻿namespace Emu6502
 {
     public class InterruptLine
     {
@@ -12,6 +6,7 @@ namespace Emu6502
 
         /// <summary>
         /// True if something is holding the interrupt line.
+        /// If the line is edge triggered, this returning true does not necessarily mean that an interrupt should occur.
         /// </summary>
         public bool Triggered => interruptors.Count > 0;
         /// <summary>
@@ -27,13 +22,11 @@ namespace Emu6502
                     return false;
 
                 if (!edgeTriggered)
-                {
-                    hasTriggeredSinceLastEdge = true;
                     return true;
-                }
 
                 if (hasTriggeredSinceLastEdge)
                     return false;
+
                 hasTriggeredSinceLastEdge = true;
                 return true;
             }
@@ -55,8 +48,6 @@ namespace Emu6502
 
         public bool TriggerInterrupt(object interruptor)
         {
-            if (!Triggered)
-                hasTriggeredSinceLastEdge = false;
             return interruptors.Add(interruptor);
         }
 
@@ -67,7 +58,12 @@ namespace Emu6502
 
         public bool ClearInterrupt(object interruptor)
         {
-            return interruptors.Remove(interruptor);
+            bool cleared = interruptors.Remove(interruptor);
+
+            if (interruptors.Count == 0)
+                hasTriggeredSinceLastEdge = false;
+
+            return cleared;
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace Emu6502
+﻿namespace Emu6502
 {
     public partial class Cpu
     {
@@ -34,8 +32,6 @@ namespace Emu6502
         private const int NMI_OPCODE = 256;
         private const int RST_OPCODE = 257;
         private const int IRQ_OPCODE = 258;
-        private const bool READ = true;
-        private const bool WRITE = false;
 
         public readonly InterruptLine nmi;
         public readonly InterruptLine irq;
@@ -207,6 +203,7 @@ namespace Emu6502
             a = 0;
             x = 0;
             y = 0;
+            s = 0;
             p = 0;
             pc = 0;
 
@@ -264,50 +261,45 @@ namespace Emu6502
 
             if (step == STP_STEP)
                 return;
+
             // Don't service interrupts until we finish the current instruction.
             // TODO: Sometimes we should (like inbetween an NMI_OPCODE, IRQ_OPCODE etc)
             else if (step >= 0)
                 instructions[opcode]();
 
-            // TODO: Should we remove the edgeTriggered feature and make the
-            // device that triggered the interrupt untrigger it themselves
-            // on the next cycle? Seems more realistic.
-            //else if (nmi.ShouldInterrupt)
-            //{
-            //    // TODO: Handle WAI_STEP
-
-            //    // TODO: How to handle interrupts?
-            //    opcode = NMI_OPCODE;
-            //    step = 0;
-            //    // TODO: Handle first step of interrupt.
-            //    return;
-            //}
-
-            //else if (irq.ShouldInterrupt)
-            //{
-            //    // TODO: Handle WAI_STEP
-
-            //    if (!I)
-            //    {
-            //        // TODO: How to handle interrupts?
-            //        opcode = IRQ_OPCODE;
-            //        step = 0;
-            //        // TODO: Handle first step of interrupt.
-            //    }
-            //}
-
+            else if (nmi.ShouldInterrupt)
+            {
+                opcode = NMI_OPCODE;
+                step = 0;
+                instructions[opcode]();
+            }
+            else if (irq.ShouldInterrupt && (!I || step == WAI_STEP))
+            {
+                if (!I)
+                {
+                    opcode = IRQ_OPCODE;
+                    step = 0;
+                    instructions[opcode]();
+                }
+                else if (step == WAI_STEP)
+                {
+                    opcode = bc.SyncCycle(pc);
+                    step = 0;
+                    instructions[opcode]();
+                }
+            }
             else if (step == WAI_STEP)
                 return;
             else if (step == NEXT_INSTR_STEP)
             {
-                step = 0;
                 opcode = bc.SyncCycle(pc);
+                step = 0;
                 instructions[opcode]();
             }
             else if (step == PIPELINED_FETCH_STEP)
             {
-                step = 1;
                 // Opcode was set by the previous instruction.
+                step = 1;
                 instructions[opcode]();
             }
         }
@@ -548,7 +540,7 @@ namespace Emu6502
                 {
                     _ = bc.ReadCycle(pc);
 
-                    int result = PcL + effectiveAddress;
+                    int result = PcL + (sbyte)effectiveAddress;
                     PcL = (byte)result;
 
                     if (result > byte.MaxValue)

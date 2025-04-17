@@ -16,7 +16,8 @@ namespace Emu6502Cli
 
             // Create devices
             Ram ram = new Ram(0, 0x8000);
-            SimpleUart uart = new SimpleUart(0xD000);
+            VirtualUart uart = new VirtualUart(0xB200, "COM95"); // COM95--COM96
+            Console.WriteLine("Virtual serial port initialized. Use COM96 to connect.");
             Rom rom = new Rom(0xC000, 0x4000);
             if (args.Length > 0)
                 rom.Program(args[0]);

@@ -39,13 +39,13 @@
             }
             else if (step == 5)
             {
-                EffectiveAddressL = bc.ReadCycle(0xFFFC);
+                EffectiveAddressL = bc.VecCycle(0xFFFE);
 
                 step++;
             }
             else if (step == 6)
             {
-                EffectiveAddressH = bc.ReadCycle(0xFFFD);
+                EffectiveAddressH = bc.VecCycle(0xFFFF);
                 pc = effectiveAddress;
 
                 step = NEXT_INSTR_STEP;
@@ -1580,9 +1580,23 @@
             }
         }
 
+        /// <summary>
+        /// Transfer x to stack.
+        /// </summary>
         private void TXS_IMPL_9A()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            } else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                SetNZ(s = x);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void STZ_ABS_9C()
@@ -1653,7 +1667,7 @@
                 SetNZ(x = bc.ReadCycle(pc));
                 pc++;
 
-                step++;
+                step = NEXT_INSTR_STEP;
             }
         }
 
@@ -2454,16 +2468,101 @@
 
         private void NMI()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                _ = bc.ReadCycle(pc); // We actully have to handle the bus on step 0 this time.
+                // Not sure when to do this.
+                I = true;
+                B = false;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+
+                step++;
+            }
+            else if (step == 2)
+            {
+                bc.WriteCycle(ExpandedS, p);
+
+                step++;
+            }
+            else if (step == 3)
+            {
+                bc.WriteCycle(ExpandedS, PcL);
+
+                step++;
+            }
+            else if (step == 4)
+            {
+                bc.WriteCycle(ExpandedS, PcH);
+
+                step++;
+            }
+            else if (step == 5)
+            {
+                EffectiveAddressL = bc.VecCycle(0xFFFA);
+
+                step++;
+            }
+            else if (step == 6)
+            {
+                EffectiveAddressH = bc.VecCycle(0xFFFB);
+                pc = effectiveAddress;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void IRQ()
         {
             if (step == 0)
             {
+                _ = bc.ReadCycle(pc); // We actully have to handle the bus on step 0 this time.
+                // Not sure when to do this.
+                I = true;
+                B = false;
+
                 step++;
-                bc.Vbp = true;
-                // TODO: Implement IRQ routine
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+
+                step++;
+            }
+            else if (step == 2)
+            {
+                bc.WriteCycle(ExpandedS, p);
+
+                step++;
+            }
+            else if (step == 3)
+            {
+                bc.WriteCycle(ExpandedS, PcL);
+
+                step++;
+            }
+            else if (step == 4)
+            {
+                bc.WriteCycle(ExpandedS, PcH);
+
+                step++;
+            }
+            else if (step == 5)
+            {
+                EffectiveAddressL = bc.VecCycle(0xFFFE);
+
+                step++;
+            }
+            else if (step == 6)
+            {
+                EffectiveAddressH = bc.VecCycle(0xFFFF);
+                pc = effectiveAddress;
+
+                step = NEXT_INSTR_STEP;
             }
         }
 
