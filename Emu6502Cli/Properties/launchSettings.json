@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Emu6502Cli": {
+      "commandName": "Project"
+    },
+    "Custom": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\CodeProjects\\emu6502\\asm\\simpleos\\bin\\rom.bin"
+    }
+  }
+}

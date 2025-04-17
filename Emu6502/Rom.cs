@@ -43,6 +43,11 @@ namespace Emu6502
             data.CopyTo(this.data, 0);
         }
 
+        public void Program(string fileName)
+        {
+            Program(File.ReadAllBytes(fileName));
+        }
+
         private bool InRange(ushort address)
         {
             return address >= baseAddress

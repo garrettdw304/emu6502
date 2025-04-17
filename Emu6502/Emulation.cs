@@ -132,14 +132,14 @@ namespace Emu6502
         {
             exeCts?.Cancel();
             if (wait)
-            {
                 // Wait for the execution thread to release the exe semaphore.
-                // TODO: Do we want to throw after some time in the case of a
-                // deadlock (exe thread somehow calls Stop(true) and waits for
-                // itself to exit)?
-                exeSem.Wait();
-                exeSem.Release();
-            }
+                Wait();
+        }
+
+        public void Wait()
+        {
+            exeSem.Wait();
+            exeSem.Release();
         }
 
         /// <summary>

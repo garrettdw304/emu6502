@@ -1637,9 +1637,24 @@
             }
         }
 
+        /// <summary>
+        /// Load x.
+        /// </summary>
         private void LDX_IMM_A2()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                SetNZ(x = bc.ReadCycle(pc));
+                pc++;
+
+                step++;
+            }
         }
 
         /// <summary>
@@ -1700,9 +1715,24 @@
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Load a.
+        /// </summary>
         private void LDA_IMM_A9()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                SetNZ(a = bc.ReadCycle(pc));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
         
         private void TAX_IMPL_AA()
