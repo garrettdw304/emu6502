@@ -1,0 +1,15 @@
+INSTRUCTION PIPELINING
+"The processors also use a sort of pipelining. If an instruction does not store data in memory on its last cycle,
+the processor can fetch the opcode of the next instruction while executing the last cycle.
+[https://www.atarihq.com/danb/files/64doc.txt]
+
+Pipelining happens when an instruction's last cycle does not need to use its memory access. To make use of this
+memory access, it will fetch the opcode of the next instruction. I do not know exactly how this works but I assume that
+it does not do this when an interrupt is to happen after the current instruction and this is why an interrupt must be
+signaled before the last cycle of an instruction for it to be serviced after the current instruction because the
+instruction needs to know wether or not it should load the opcode of the next instruction and increment pc or if it
+should wait to do that after the interrupt.
+
+INTERRUPTS
+To process the interrupt before the next instruction,
+the interrupt must occur before the last cycle of the current instruction. [https://www.atarihq.com/danb/files/64doc.txt]

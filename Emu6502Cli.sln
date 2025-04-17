@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emu6502Cli", "Emu6502Cli\Emu6502Cli.csproj", "{3525D59D-F371-4BFE-95DB-0D3A5768AB87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emu6502", "Emu6502\Emu6502.csproj", "{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3525D59D-F371-4BFE-95DB-0D3A5768AB87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3525D59D-F371-4BFE-95DB-0D3A5768AB87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3525D59D-F371-4BFE-95DB-0D3A5768AB87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3525D59D-F371-4BFE-95DB-0D3A5768AB87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C4D583F-3B51-40BF-B458-B2414B980D7D}
+	EndGlobalSection
+EndGlobal
