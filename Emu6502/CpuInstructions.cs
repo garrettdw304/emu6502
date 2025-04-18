@@ -2047,9 +2047,23 @@
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Compare.
+        /// </summary>
         private void CMP_IMM_C9()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            } else if (step == 1)
+            {
+                CMP(bc.ReadCycle(pc));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void DEX_IMPL_CA()

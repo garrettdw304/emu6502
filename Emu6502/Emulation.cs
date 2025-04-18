@@ -106,19 +106,20 @@ namespace Emu6502
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 long accumulatedSWTicks = 0;
+                long ticksPerCycle = Stopwatch.Frequency / hz;
                 while (!exeCts.IsCancellationRequested)
                 {
-                    // Wait for 1 cycle of time to pass.
-                    if (sw.ElapsedTicks * hz / Stopwatch.Frequency < 1)
+                    // Wait for at least 1 cycle of time to pass.
+                    if (sw.ElapsedTicks < ticksPerCycle)
                         continue;
                     accumulatedSWTicks += sw.ElapsedTicks;
                     sw.Restart();
-                    while (accumulatedSWTicks >= Stopwatch.Frequency / hz)
+                    while (accumulatedSWTicks >= ticksPerCycle)
                     {
                         // Continue to wait and accumulate cycles until we have
                         // permission to modify state.
                         if (!stateAccessSem.Wait(0)) continue;
-                        accumulatedSWTicks -= Stopwatch.Frequency / hz;
+                        accumulatedSWTicks -= ticksPerCycle;
                         ExeCycle(hz);
                         stateAccessSem.Release();
                     }

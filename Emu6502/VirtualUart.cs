@@ -5,7 +5,8 @@ namespace Emu6502
     public class VirtualUart : Device
     {
         // Status Bits
-        private const byte RX_NOT_EMPTY_MASK = 0b0000_0001;
+        private const byte RDR_FULL_MASK =  0b0000_0001;
+        private const byte TDR_EMPTY_MASK = 0b0000_0010;
 
         // Registers
         private const ushort RXTX_REG = 0;
@@ -26,7 +27,9 @@ namespace Emu6502
             {
                 byte toReturn = 0;
                 if (port.BytesToRead > 0)
-                    toReturn |= RX_NOT_EMPTY_MASK;
+                    toReturn |= RDR_FULL_MASK;
+                if (port.BytesToWrite == 0)
+                    toReturn |= TDR_EMPTY_MASK;
                 return toReturn;
             }
         }
@@ -34,6 +37,8 @@ namespace Emu6502
         public VirtualUart(ushort baseAddress, string portName) : base(baseAddress)
         {
             port = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
+            port.WriteTimeout = 1;
+            port.ReadTimeout = 1;
             port.Open();
 
             rdr = 0;
@@ -66,8 +71,8 @@ namespace Emu6502
             {
                 if (address == RXTX_REG)
                 {
-                    byte[] buf = [bc.Data];
-                    port.Write(buf, 0, 1);
+                    if (port.BytesToWrite == 0 && port.CtsHolding)
+                        port.Write([bc.Data], 0, 1);
                 }
                 else if (address == STATUS_REG)
                     _ = 0;

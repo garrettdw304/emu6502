@@ -55,7 +55,7 @@ namespace Emu6502Cli
             Console.WriteLine($"Stopwatch: {sw.ElapsedMilliseconds} ms");
             Console.WriteLine($"Delta: {sw.ElapsedMilliseconds * 1000 - (long)emu.CycleCount} cycles");
             Console.WriteLine($"Current pc: {cpu.pc:X2}");
-            Console.WriteLine("Flags: NVBDIZC");
+            Console.WriteLine("Flags: NV-BDIZC");
             Console.WriteLine($"Flags: {Convert.ToString(cpu.p, 2).PadLeft(8, '0')}");
 
             Console.WriteLine("Press enter to exit.");
