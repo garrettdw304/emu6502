@@ -198,7 +198,7 @@
             nmi = new InterruptLine(true);
             irq = new InterruptLine(false);
             rst = new InterruptLine(false);
-            bc = new BusController(irq, nmi, rst);
+            bc = new BusController();
 
             a = 0;
             x = 0;

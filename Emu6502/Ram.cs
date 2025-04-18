@@ -1,11 +1,12 @@
 ﻿namespace Emu6502
 {
-    public class Ram
+    public class Ram : Device
     {
-        private byte[] data;
-        private ushort baseAddress;
+        private readonly byte[] data;
 
-        public Ram(ushort baseAddress, int size)
+        protected override int Length => data.Length;
+
+        public Ram(ushort baseAddress, int size) : base(baseAddress)
         {
             if (size < 0 || size > 65536)
                 throw new ArgumentOutOfRangeException(nameof(size));
@@ -16,10 +17,9 @@
                     + (baseAddress + size));
 
             data = new byte[size];
-            this.baseAddress = baseAddress;
         }
 
-        public void OnCycle(IDeviceInterface bc)
+        public override void OnCycle(IDeviceInterface bc)
         {
             if (!InRange(bc.Address))
                 return;
@@ -28,17 +28,6 @@
                 bc.Data = data[Relative(bc.Address)];
             else
                 data[Relative(bc.Address)] = bc.Data;
-        }
-
-        private bool InRange(ushort address)
-        {
-            return address >= baseAddress
-                && address < (baseAddress + data.Length);
-        }
-
-        private ushort Relative(ushort address)
-        {
-            return (ushort)(address - baseAddress);
         }
     }
 }

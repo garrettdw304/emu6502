@@ -18,6 +18,7 @@ namespace Emu6502Cli
             Ram ram = new Ram(0, 0x8000);
             VirtualUart uart = new VirtualUart(0xB200, "COM95"); // COM95--COM96
             Console.WriteLine("Virtual serial port initialized. Use COM96 to connect.");
+            SimpleTimer timer = new SimpleTimer(0xB300, cpu.irq);
             Rom rom = new Rom(0xC000, 0x4000);
             if (args.Length > 0)
                 rom.Program(args[0]);
@@ -34,6 +35,7 @@ namespace Emu6502Cli
             // Connect devices
             cpu.bc.OnCycle += ram.OnCycle;
             cpu.bc.OnCycle += uart.OnCycle;
+            cpu.bc.OnCycle += timer.OnCycle;
             cpu.bc.OnCycle += rom.OnCycle;
 
             // Start a stopwatch
@@ -53,6 +55,8 @@ namespace Emu6502Cli
             Console.WriteLine($"Stopwatch: {sw.ElapsedMilliseconds} ms");
             Console.WriteLine($"Delta: {sw.ElapsedMilliseconds * 1000 - (long)emu.CycleCount} cycles");
             Console.WriteLine($"Current pc: {cpu.pc:X2}");
+            Console.WriteLine("Flags: NVBDIZC");
+            Console.WriteLine($"Flags: {Convert.ToString(cpu.p, 2).PadLeft(8, '0')}");
 
             Console.WriteLine("Press enter to exit.");
             Console.ReadLine();

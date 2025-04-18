@@ -2,7 +2,7 @@
 
 namespace Emu6502
 {
-    public class VirtualUart
+    public class VirtualUart : Device
     {
         // Status Bits
         private const byte RX_NOT_EMPTY_MASK = 0b0000_0001;
@@ -11,15 +11,14 @@ namespace Emu6502
         private const ushort RXTX_REG = 0;
         private const ushort STATUS_REG = 1;
 
-        private const byte REGISTERS = 2;
-
-        private readonly ushort baseAddress;
         private readonly SerialPort port;
 
         /// <summary>
         /// Receiver Data Register
         /// </summary>
         private byte rdr;
+
+        protected override int Length => 2;
 
         private byte Status
         {
@@ -32,16 +31,15 @@ namespace Emu6502
             }
         }
 
-        public VirtualUart(ushort baseAddress, string portName)
+        public VirtualUart(ushort baseAddress, string portName) : base(baseAddress)
         {
-            this.baseAddress = baseAddress;
             port = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
             port.Open();
 
             rdr = 0;
         }
 
-        public void OnCycle(IDeviceInterface bc)
+        public override void OnCycle(IDeviceInterface bc)
         {
             if (!InRange(bc.Address))
                 return;
@@ -74,17 +72,6 @@ namespace Emu6502
                 else if (address == STATUS_REG)
                     _ = 0;
             }
-        }
-
-        private bool InRange(ushort address)
-        {
-            return address >= baseAddress
-                && address < (baseAddress + REGISTERS);
-        }
-
-        private ushort Relative(ushort address)
-        {
-            return (ushort)(address - baseAddress);
         }
     }
 }

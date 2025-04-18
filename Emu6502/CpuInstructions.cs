@@ -7,9 +7,6 @@
             if (step == 0)
             {
                 pc++;
-                // Not sure when to do this.
-                I = true;
-                B = false;
 
                 step++;
             }
@@ -21,19 +18,25 @@
             }
             else if (step == 2)
             {
-                bc.WriteCycle(ExpandedS, p);
+                bc.WriteCycle(ExpandedS, PcH);
+                s--;
 
                 step++;
             }
             else if (step == 3)
             {
                 bc.WriteCycle(ExpandedS, PcL);
+                s--;
 
                 step++;
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, PcH);
+                bc.WriteCycle(ExpandedS, (byte)(p | D_MASK));
+                s--;
+                // Not sure when to do this. Definitely after we push P.
+                I = true;
+                B = false;
 
                 step++;
             }
@@ -900,9 +903,24 @@
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Clear interrupt bit (enable interrupts).
+        /// </summary>
         private void CLI_IMPL_58()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                I = false;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1094,11 +1112,9 @@
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Jump.
-        /// </summary>
         private void JMP_IND_6C()
         {
+            throw new NotImplementedException();
             if (step == 0)
             {
                 pc++;
@@ -2471,9 +2487,6 @@
             if (step == 0)
             {
                 _ = bc.ReadCycle(pc); // We actully have to handle the bus on step 0 this time.
-                // Not sure when to do this.
-                I = true;
-                B = false;
 
                 step++;
             }
@@ -2485,19 +2498,25 @@
             }
             else if (step == 2)
             {
-                bc.WriteCycle(ExpandedS, p);
+                bc.WriteCycle(ExpandedS, PcH);
+                s--;
 
                 step++;
             }
             else if (step == 3)
             {
                 bc.WriteCycle(ExpandedS, PcL);
+                s--;
 
                 step++;
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, PcH);
+                bc.WriteCycle(ExpandedS, p);
+                s--;
+                // Not sure when to do this. Definitely after we push P.
+                I = true;
+                B = false;
 
                 step++;
             }
@@ -2521,9 +2540,6 @@
             if (step == 0)
             {
                 _ = bc.ReadCycle(pc); // We actully have to handle the bus on step 0 this time.
-                // Not sure when to do this.
-                I = true;
-                B = false;
 
                 step++;
             }
@@ -2535,19 +2551,25 @@
             }
             else if (step == 2)
             {
-                bc.WriteCycle(ExpandedS, p);
-
+                bc.WriteCycle(ExpandedS, PcH);
+                s--;
+                
                 step++;
             }
             else if (step == 3)
             {
                 bc.WriteCycle(ExpandedS, PcL);
+                s--;
 
                 step++;
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, PcH);
+                bc.WriteCycle(ExpandedS, p);
+                s--;
+                // Not sure when to do this. Definitely after we push P.
+                I = true;
+                B = false;
 
                 step++;
             }
@@ -2580,9 +2602,6 @@
             if (step == 0)
             {
                 _ = bc.ReadCycle(pc); // We actully have to handle the bus on step 0 this time.
-                // Not sure when to do this.
-                I = true;
-                B = false;
 
                 step++;
             }
@@ -2594,19 +2613,25 @@
             }
             else if (step == 2)
             {
-                bc.WriteCycle(ExpandedS, p);
+                bc.WriteCycle(ExpandedS, PcH);
+                s--;
 
                 step++;
             }
             else if (step == 3)
             {
                 bc.WriteCycle(ExpandedS, PcL);
+                s--;
 
                 step++;
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, PcH);
+                bc.WriteCycle(ExpandedS, p);
+                s--;
+                // Not sure when to do this. Definitely after we push P.
+                I = true;
+                B = false;
 
                 step++;
             }

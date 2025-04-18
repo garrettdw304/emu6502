@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Emu6502
+﻿namespace Emu6502
 {
-    public class Rom
+    public class Rom : Device
     {
-        private byte[] data;
-        private ushort baseAddress;
+        private readonly byte[] data;
 
-        public Rom(ushort baseAddress, int size)
+        protected override int Length => data.Length;
+
+        public Rom(ushort baseAddress, int size) : base(baseAddress)
         {
             if (size < 0 || size > 65536)
                 throw new ArgumentOutOfRangeException(nameof(size));
@@ -22,10 +17,9 @@ namespace Emu6502
                     + (baseAddress + size));
 
             data = new byte[size];
-            this.baseAddress = baseAddress;
         }
 
-        public void OnCycle(IDeviceInterface bc)
+        public override void OnCycle(IDeviceInterface bc)
         {
             if (!InRange(bc.Address))
                 return;
@@ -46,17 +40,6 @@ namespace Emu6502
         public void Program(string fileName)
         {
             Program(File.ReadAllBytes(fileName));
-        }
-
-        private bool InRange(ushort address)
-        {
-            return address >= baseAddress
-                && address < (baseAddress + data.Length);
-        }
-
-        private ushort Relative(ushort address)
-        {
-            return (ushort)(address - baseAddress);
         }
     }
 }

@@ -3,13 +3,6 @@
 // Define if the bus controller should throw an exception if mupltiple devices try to write to the bus at the same time.
 //#define THROW_ON_BUS_CONTENTION
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Emu6502
 {
     /// <summary>
@@ -53,10 +46,6 @@ namespace Emu6502
             }
         }
 
-        public InterruptLine Irq { get; }
-        public InterruptLine Nmi { get; }
-        public InterruptLine Rst { get; }
-
         /// <summary>
         /// Called on the rising edge of the clock, after the cpu has prepared
         /// the control lines such as rwb, address, and possibly data.
@@ -66,17 +55,12 @@ namespace Emu6502
         private byte data;
         private bool dataHiZ;
 
-        public BusController(InterruptLine irq, InterruptLine nmi,
-            InterruptLine rst)
+        public BusController()
         {
             Rwb = false;
             Sync = false;
             Vbp = false;
             Address = 0;
-
-            Irq = irq;
-            Nmi = nmi;
-            Rst = rst;
 
             data = 0;
             dataHiZ = false;
@@ -175,15 +159,14 @@ namespace Emu6502
 
     public interface IDeviceInterface
     {
+        /// <summary>
+        /// True when reading, false when writing.
+        /// </summary>
         public bool Rwb { get;  }
         public bool Sync { get; }
         public bool Vbp { get; }
         public ushort Address { get; }
         public byte Data { get; set; }
-
-        public InterruptLine Irq { get; }
-        public InterruptLine Nmi { get; }
-        public InterruptLine Rst { get; }
 
         public event Action<IDeviceInterface>? OnCycle;
     }
