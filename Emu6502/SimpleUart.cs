@@ -2,7 +2,7 @@
 
 namespace Emu6502
 {
-    public class SimpleUart
+    public class SimpleUart : Device
     {
         // Status Bits
         private const byte RX_NOT_EMPTY_MASK = 0b0000_0001;
@@ -11,7 +11,7 @@ namespace Emu6502
         private const ushort RXTX_REG = 0;
         private const ushort STATUS_REG = 1;
 
-        private const byte REGISTERS = 2;
+        protected override int Length => 2;
 
         /// <summary>
         /// To be used by the external device (aka not by the CPU) connected to this serial port.
@@ -20,8 +20,6 @@ namespace Emu6502
 
         private readonly ConcurrentQueue<byte> tx;
         private readonly ConcurrentQueue<byte> rx;
-
-        private readonly ushort baseAddress;
 
         private byte Status
         {
@@ -34,14 +32,13 @@ namespace Emu6502
             }
         }
 
-        public SimpleUart(ushort baseAddress)
+        public SimpleUart(ushort baseAddress) : base(baseAddress)
         {
             tx = new ConcurrentQueue<byte>();
             rx = new ConcurrentQueue<byte>();
-            this.baseAddress = baseAddress;
         }
 
-        public void OnCycle(IDeviceInterface bc)
+        public override void OnCycle(IDeviceInterface bc)
         {
             if (!InRange(bc.Address))
                 return;
@@ -80,17 +77,6 @@ namespace Emu6502
         public bool TryReceive(out byte data)
         {
             return tx.TryDequeue(out data);
-        }
-
-        private bool InRange(ushort address)
-        {
-            return address >= baseAddress
-                && address < (baseAddress + REGISTERS);
-        }
-
-        private ushort Relative(ushort address)
-        {
-            return (ushort)(address - baseAddress);
         }
     }
 }
