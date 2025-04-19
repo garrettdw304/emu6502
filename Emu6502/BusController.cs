@@ -31,18 +31,17 @@ namespace Emu6502
                 #if THROW_ON_HIZ_READ
                 if (dataHiZ)
                     throw new BusException("Data bus is HiZ!");
-                else
                 #endif
-                    return data;
+                return data;
             }
             set
             {
                 #if THROW_ON_BUS_CONTENTION
                 if (!dataHiZ)
                     throw new BusException("Data bus conflict!");
-                else
                 #endif
-                    data = value;
+                data = value;
+                dataHiZ = false;
             }
         }
 
