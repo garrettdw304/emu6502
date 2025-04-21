@@ -20,17 +20,7 @@ namespace Emu6502Cli
             Console.WriteLine("Virtual serial port initialized. Use COM96 to connect.");
             SimpleTimer timer = new SimpleTimer(0xB300, cpu.irq);
             Rom rom = new Rom(0xC000, 0x4000);
-            if (args.Length > 0)
-                rom.Program(args[0]);
-            else
-            {
-                byte[] bin = new byte[0x4000];
-                bin[bin.Length - 4] = 0x00;
-                bin[bin.Length - 3] = 0xC0;
-                for (int i = 0; i < 15; i++) bin[i] = 0xea; // NOP
-                bin[15] = 0x4c; bin[16] = 0x00; bin[17] = 0xC0; // JMP ABS
-                rom.Program(bin);
-            }
+            rom.Program(args[0]);
 
             // Connect devices
             cpu.bc.OnCycle += ram.OnCycle;
