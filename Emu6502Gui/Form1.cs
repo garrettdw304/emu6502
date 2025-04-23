@@ -72,7 +72,6 @@ namespace Emu6502Gui
         private void Form1_Load(object sender, EventArgs e)
         {
             MouseWheel += Form1_MouseWheel;
-            graphicsChipOutput.Show();
         }
 
         private void continueBtn_Click(object sender, EventArgs e)
