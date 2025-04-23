@@ -11,7 +11,7 @@ namespace Emu6502
         private const ushort RXTX_REG = 0;
         private const ushort STATUS_REG = 1;
 
-        protected override int Length => 2;
+        public override int Length => 2;
 
         /// <summary>
         /// To be used by the external device (aka not by the CPU) connected to this serial port.

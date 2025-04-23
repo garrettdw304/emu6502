@@ -303,6 +303,21 @@
                 instructions[opcode]();
             }
         }
+
+        public override string ToString()
+        {
+            return $"""
+                A: {a}
+                X: {x}
+                Y: {y}
+                S: {s}
+                P: NV-BDIZC
+                P: {Convert.ToString(p, 2).PadLeft(8, '0')}
+                PC: {pc:X4}
+                Step: {StepToString(step)}
+                Instr: {instructions[opcode].Method.Name}
+                """;
+        }
         
         private void None()
         {
@@ -355,13 +370,13 @@
             a = (byte)result;
         }
 
-        private void CMP(byte value)
+        private void CMP(byte reg, byte value)
         {
-            int result = a - value - (C ? 0 : 1);
+            int result = reg - value - (C ? 0 : 1);
 
             C = result < 0;
             SetNZ((byte)result);
-            SetV(a, value, (byte)result);
+            SetV(reg, value, (byte)result);
         }
 
         private void BIT(byte value)
@@ -775,6 +790,21 @@
             return false;
         }
         #endregion Instruction Helpers
+
+        private string StepToString(int step)
+        {
+            if (step >= 0)
+                return step.ToString();
+
+            if (step == NEXT_INSTR_STEP)
+                return nameof(NEXT_INSTR_STEP);
+            else if (step == WAI_STEP)
+                return nameof(WAI_STEP);
+            else if (step == STP_STEP)
+                return nameof(STP_STEP);
+
+            return step.ToString();
+        }
 
         private delegate void Instruction();
     }

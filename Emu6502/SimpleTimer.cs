@@ -2,7 +2,7 @@
 {
     public class SimpleTimer : Device
     {
-        protected override int Length => 4;
+        public override int Length => 4;
 
         private const int MODE = 0;
         private const int STATUS = 1;

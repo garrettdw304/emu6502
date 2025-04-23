@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emu6502Cli", "Emu6502Cli\Em
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emu6502", "Emu6502\Emu6502.csproj", "{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emu6502Gui", "Emu6502Gui\Emu6502Gui.csproj", "{DF9B8E20-171D-4ED7-9AA8-019BF2849225}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61C9D7A0-2E00-4153-8F3D-F5174D68FDCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF9B8E20-171D-4ED7-9AA8-019BF2849225}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF9B8E20-171D-4ED7-9AA8-019BF2849225}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF9B8E20-171D-4ED7-9AA8-019BF2849225}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF9B8E20-171D-4ED7-9AA8-019BF2849225}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,7 @@
 
 namespace Emu6502
 {
-    public class VirtualUart : Device
+    public class VirtualUart : Device, IDisposable
     {
         // Status Bits
         private const byte RDR_FULL_MASK =  0b0000_0001;
@@ -13,13 +13,14 @@ namespace Emu6502
         private const ushort STATUS_REG = 1;
 
         private readonly SerialPort port;
+        public string PortName => port.PortName;
 
         /// <summary>
         /// Receiver Data Register
         /// </summary>
         private byte rdr;
 
-        protected override int Length => 2;
+        public override int Length => 2;
 
         private byte Status
         {
@@ -77,6 +78,12 @@ namespace Emu6502
                 else if (address == STATUS_REG)
                     _ = 0;
             }
+        }
+
+        public void Dispose()
+        {
+            port.Close();
+            port.Dispose();
         }
     }
 }

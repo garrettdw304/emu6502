@@ -4,7 +4,7 @@
     {
         private readonly byte[] data;
 
-        protected override int Length => data.Length;
+        public override int Length => data.Length;
 
         public Ram(ushort baseAddress, int size) : base(baseAddress)
         {
@@ -17,6 +17,17 @@
                     + (baseAddress + size));
 
             data = new byte[size];
+        }
+
+        /// <summary>
+        /// For display use.
+        /// </summary>
+        public byte this[int address]
+        {
+            get
+            {
+                return data[address];
+            }
         }
 
         public override void OnCycle(IDeviceInterface bc)

@@ -2,9 +2,9 @@
 {
     public abstract class Device
     {
-        protected readonly ushort baseAddress;
+        public readonly ushort baseAddress;
         
-        protected abstract int Length { get; }
+        public abstract int Length { get; }
 
         public Device(ushort baseAddress)
         {
@@ -13,13 +13,13 @@
 
         public abstract void OnCycle(IDeviceInterface bc);
 
-        protected bool InRange(ushort address)
+        public bool InRange(ushort address)
         {
             return address >= baseAddress
                 && address < (baseAddress + Length);
         }
 
-        protected ushort Relative(ushort address)
+        public ushort Relative(ushort address)
         {
             return (ushort)(address - baseAddress);
         }

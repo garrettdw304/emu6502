@@ -1648,7 +1648,19 @@
 
         private void LDY_IMM_A0()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                SetNZ(y = bc.ReadCycle(pc));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
         
         /// <summary>
@@ -1999,7 +2011,7 @@
 
             if (step == 5)
             {
-                CMP(bc.ReadCycle(effectiveAddress));
+                CMP(a, bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2007,7 +2019,15 @@
 
         private void CPY_ZPG_C4()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            else if (step == 2)
+            {
+                CMP(y, bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2020,7 +2040,7 @@
 
             else if (step == 2)
             {
-                CMP(bc.ReadCycle(effectiveAddress));
+                CMP(a, bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2044,7 +2064,17 @@
 
         private void INY_IMPL_C8()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            } else if (step == 1)
+            {
+                y++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2059,7 +2089,7 @@
                 step++;
             } else if (step == 1)
             {
-                CMP(bc.ReadCycle(pc));
+                CMP(a, bc.ReadCycle(pc));
                 pc++;
 
                 step = NEXT_INSTR_STEP;
@@ -2098,7 +2128,7 @@
 
             else if (step == 3)
             {
-                CMP(bc.ReadCycle(effectiveAddress));
+                CMP(a, bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2138,7 +2168,7 @@
 
             if (step == 5)
             {
-                CMP(bc.ReadCycle(effectiveAddress));
+                CMP(a, bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2159,7 +2189,7 @@
 
             if (step == 3)
             {
-                CMP(bc.ReadCycle(effectiveAddress));
+                CMP(a, bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2196,7 +2226,7 @@
 
             if (step == 4)
             {
-                CMP(bc.ReadCycle(effectiveAddress));
+                CMP(a, bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2225,7 +2255,7 @@
 
             if (step == 4)
             {
-                CMP(bc.ReadCycle(effectiveAddress));
+                CMP(a, bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
