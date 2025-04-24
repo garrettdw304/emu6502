@@ -11,6 +11,8 @@ namespace Emu6502Gui
         private const ushort RAM_BASE_ADDRESS = 0x0000;
         private const int RAM_SIZE = 0x8000;
         private const ushort UART_BASE_ADDRESS = 0xB000;
+        private const ushort TIMER_BASE_ADDRESS = 0xB100;
+        private const ushort GRAPHICS_CHIP_BASE_ADDRESS = 0xB200;
 
         private readonly Emulation emu;
         private readonly Cpu cpu;
@@ -20,6 +22,9 @@ namespace Emu6502Gui
         private readonly SimpleTimer timer;
         private readonly Ram ram;
         private readonly PushButtonInterruptors pbi;
+        private readonly GraphicsChip graphicsChip;
+        private readonly GraphicsChipOutput graphicsChipForm;
+        private readonly Bitmap graphicsChipBuffer;
 
         /// <summary>
         /// First row displayed in mem display.
@@ -37,36 +42,21 @@ namespace Emu6502Gui
 
             // Create devices
             rom = new Rom(ROM_BASE_ADDRESS, ROM_SIZE);
-            timer = new SimpleTimer(0xB100, cpu.irq);
+            timer = new SimpleTimer(TIMER_BASE_ADDRESS, cpu.irq);
             ram = new Ram(RAM_BASE_ADDRESS, RAM_SIZE);
             pbi = new PushButtonInterruptors(cpu.irq, cpu.nmi, cpu.rst);
+            graphicsChipBuffer = new Bitmap(320, 240);
+            graphicsChipForm = new GraphicsChipOutput(graphicsChipBuffer);
+            graphicsChip = new GraphicsChip(GRAPHICS_CHIP_BASE_ADDRESS, Graphics.FromImage(graphicsChipBuffer));
 
             // Connect devices
             cpu.bc.OnCycle += ram.OnCycle;
             cpu.bc.OnCycle += timer.OnCycle;
             cpu.bc.OnCycle += rom.OnCycle;
             cpu.bc.OnCycle += pbi.OnCycle;
-        }
+            cpu.bc.OnCycle += graphicsChip.OnCycle;
 
-        private void MemDisplay_RetrieveVirtualItem(object? sender, RetrieveVirtualItemEventArgs e)
-        {
-            int startByte = e.ItemIndex * 16;
-            if (startByte >= ROM_BASE_ADDRESS && startByte < ROM_SIZE)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("0000");
-                for (int i = startByte; i < Math.Min(startByte + 16, ROM_SIZE); i++)
-                    sb.Append(' ').Append(rom[i]);
-                e.Item = new ListViewItem(sb.ToString());
-            }
-            else if (startByte >= RAM_BASE_ADDRESS && startByte < RAM_SIZE)
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.Append("0000");
-                for (int i = startByte; i < Math.Min(startByte + 16, RAM_SIZE); i++)
-                    sb.Append(' ').Append(ram[i]);
-                e.Item = new ListViewItem(sb.ToString());
-            }
+            graphicsChipForm.Show();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -315,7 +305,8 @@ namespace Emu6502Gui
             {
                 uart = new VirtualUart(UART_BASE_ADDRESS, portName);
                 cpu.bc.OnCycle += uart.OnCycle;
-            } catch (UnauthorizedAccessException ex)
+            }
+            catch (UnauthorizedAccessException ex)
             {
                 MessageBox.Show(ex.Message, "Failed to connect to the port.");
                 serialPortDropdown.SelectedIndex = 0;

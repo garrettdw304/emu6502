@@ -262,7 +262,7 @@
             // serialPortDropdown
             // 
             serialPortDropdown.FormattingEnabled = true;
-            serialPortDropdown.Location = new Point(268, 484);
+            serialPortDropdown.Location = new Point(268, 481);
             serialPortDropdown.Name = "serialPortDropdown";
             serialPortDropdown.Size = new Size(182, 33);
             serialPortDropdown.TabIndex = 19;
@@ -272,7 +272,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(456, 487);
+            label3.Location = new Point(456, 484);
             label3.Name = "label3";
             label3.Size = new Size(139, 25);
             label3.TabIndex = 20;

@@ -2096,9 +2096,23 @@
             }
         }
 
+        /// <summary>
+        /// Decrement X.
+        /// </summary>
         private void DEX_IMPL_CA()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                SetNZ(--x);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void WAI_IMP_CB()
