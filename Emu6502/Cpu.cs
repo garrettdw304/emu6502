@@ -372,7 +372,7 @@
 
         private void CMP(byte reg, byte value)
         {
-            int result = reg - value - (C ? 0 : 1);
+            int result = reg - value;
 
             C = result < 0;
             SetNZ((byte)result);
@@ -419,6 +419,22 @@
             SetNZ((byte)result);
             C = (aluTmp & 1) != 0;
             aluTmp = (byte)result;
+        }
+
+        /// <summary>
+        /// Resets selected bits. Bits to reset are selected with a 0, bits to leave unchanged are selected with a 1.
+        /// </summary>
+        private void RMB(byte bitMask)
+        {
+            aluTmp = (byte)(aluTmp & bitMask);
+        }
+
+        /// <summary>
+        /// Sets selected bits. Bits to set are selected with a 1, bits to leave unchanged are selected with a 0.
+        /// </summary>
+        private void SMB(byte bitMask)
+        {
+            aluTmp = (byte)(aluTmp | bitMask);
         }
 
         /// <summary>

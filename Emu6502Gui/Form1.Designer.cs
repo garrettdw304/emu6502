@@ -52,6 +52,7 @@
             label2 = new Label();
             serialPortDropdown = new ComboBox();
             label3 = new Label();
+            graphicsBtn = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -278,11 +279,22 @@
             label3.TabIndex = 20;
             label3.Text = "UART Serial Port";
             // 
+            // graphicsBtn
+            // 
+            graphicsBtn.Location = new Point(268, 520);
+            graphicsBtn.Name = "graphicsBtn";
+            graphicsBtn.Size = new Size(112, 34);
+            graphicsBtn.TabIndex = 21;
+            graphicsBtn.Text = "Graphics";
+            graphicsBtn.UseVisualStyleBackColor = true;
+            graphicsBtn.Click += graphicsBtn_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1012, 606);
+            Controls.Add(graphicsBtn);
             Controls.Add(label3);
             Controls.Add(serialPortDropdown);
             Controls.Add(groupBox4);
@@ -340,5 +352,6 @@
         private Label label2;
         private ComboBox serialPortDropdown;
         private Label label3;
+        private Button graphicsBtn;
     }
 }

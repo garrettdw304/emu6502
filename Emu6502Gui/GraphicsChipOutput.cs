@@ -9,7 +9,6 @@
             InitializeComponent();
 
             this.toDisplay = toDisplay;
-            Graphics.FromImage(toDisplay).Clear(Color.Green);
 
             DoubleBuffered = true;
         }
@@ -18,6 +17,7 @@
         {
             base.OnPaint(e);
             float scale = Math.Min(ClientSize.Width / 320f, ClientSize.Height / 240f);
+            e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
             e.Graphics.TranslateTransform((ClientSize.Width - 320 * scale) / 2f, (ClientSize.Height - 240 * scale) / 2f);
             e.Graphics.ScaleTransform(scale, scale);
             e.Graphics.DrawImage(toDisplay, 0, 0);
@@ -26,6 +26,11 @@
         private void timer1_Tick(object sender, EventArgs e)
         {
             Invalidate();
+        }
+
+        private void GraphicsChipOutput_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

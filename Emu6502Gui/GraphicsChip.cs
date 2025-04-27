@@ -1,5 +1,4 @@
 ﻿using Emu6502;
-using System.Security.Policy;
 
 namespace Emu6502Gui
 {
@@ -22,18 +21,10 @@ namespace Emu6502Gui
         /// <summary>
         /// bit 0 - High to enable auto incrementing of the cursor when accessing the text register.
         /// bit 1 - High to enable VT-100-like command handling.
-        /// bit 2 - High to enable auto incrementing tile horizontal/vertical registers as tile texture reg is accessed.
-        /// bit 3 - High to enable auto incrementing texture offset/index registers as texture color reg is accessed.
+        /// bit 2 - High to enable auto incrementing tile horizontal/vertical registers as tile texture reg is written.
+        /// bit 3 - High to enable auto incrementing texture offset/index registers as texture color reg is written.
         /// </summary>
         private const int CONTROL_REG = 1;
-        /// <summary>
-        /// The column of the cursor.
-        /// </summary>
-        private const int TEXT_COLUMN_REG = 2;
-        /// <summary>
-        /// The row of the cursor.
-        /// </summary>
-        private const int TEXT_ROW_REG = 3;
         /// <summary>
         /// Writes the character to the current cursor position.
         /// Optionally increments the current cursor position.
@@ -44,48 +35,49 @@ namespace Emu6502Gui
         /// </summary>
         private const int SPRITE_INDEX_REG = 5;
         /// <summary>
-        /// Used to read or write the x position of the currently selected sprite.
-        /// The first read/write will set X's low byte and the second will set X's high byte.
-        /// When the sprite index register is accessed,
-        /// the next access of this register is guaranteed to access the low byte of X.
+        /// Used to read or write the low byte of the x position of the currently selected sprite.
         /// </summary>
-        private const int SPRITE_X_REG = 6;
+        private const int SPRITE_X_LO_REG = 6;
+        /// <summary>
+        /// Used to read or write the high byte of the x position of the currently selected sprite.
+        /// </summary>
+        private const int SPRITE_X_HI_REG = 7;
         /// <summary>
         /// Used to read or write the y position of the currently selected sprite.
         /// </summary>
-        private const int SPRITE_Y_REG = 7;
+        private const int SPRITE_Y_REG = 8;
         /// <summary>
         /// Used to read or write the texture index of the currently selected sprite.
         /// </summary>
-        private const int SPRITE_TEXTURE_REG = 8;
+        private const int SPRITE_TEXTURE_REG = 9;
         /// <summary>
         /// Used to select which tile is currently being modified by other tile registers.
         /// </summary>
-        private const int TILE_X_REG = 9;
+        private const int TILE_X_REG = 10;
         /// <summary>
         /// Used to select which tile is currently being modified by other tile registers.
         /// </summary>
-        private const int TILE_Y_REG = 10;
+        private const int TILE_Y_REG = 11;
         /// <summary>
         /// Used to read or write the texture index of the currently selected tile.
         /// Accesses can optionally auto increment the y and x registers.
         /// See CONTROL register to enable/disable auto increment.
         /// </summary>
-        private const int TILE_TEXTURE_REG = 11;
+        private const int TILE_TEXTURE_REG = 12;
         /// <summary>
         /// Used to select which texture is currently being modified by other texture registers.
         /// </summary>
-        private const int TEXTURE_INDEX_REG = 12;
+        private const int TEXTURE_INDEX_REG = 13;
         /// <summary>
         /// Used to select which byte of the currently selected texture's color data is being modified by the color reg.
         /// Is reset to 0 when texture index reg is accessed.
         /// </summary>
-        private const int TEXTURE_OFFSET_REG = 13;
+        private const int TEXTURE_OFFSET_REG = 14;
         /// <summary>
         /// Used to read or write the currently selected texture's color data.
         /// Accesses to this register can optionally auto increment the texture offset and texture index registers.
         /// </summary>
-        private const int TEXTURE_COLOR_REG = 14;
+        private const int TEXTURE_COLOR_REG = 15;
 
         private readonly Graphics output;
         private readonly Sprite[] sprites;
@@ -100,10 +92,6 @@ namespace Emu6502Gui
         /// The index of the sprite that is currently being modified by the sprite registers.
         /// </summary>
         private byte spriteIndex = 0;
-        /// <summary>
-        /// False if next access to sprite x reg will access the low byte of the sprite's x position, true if high byte.
-        /// </summary>
-        private bool spriteXHigh = false;
         /// <summary>
         /// The index of the texture that is currently being modified by the texture registers.
         /// </summary>
@@ -147,10 +135,10 @@ namespace Emu6502Gui
 
             regHandlers =
             [
-                ModeReg, ControlReg, TextColumnReg, TextRowReg,
-                TextReg, SpriteIndexReg, SpriteXReg, SpriteYReg,
-                SpriteTextureReg, TileXReg, TileYReg, TileTextureReg,
-                TextureIndexReg, TextureOffsetReg, TextureColorReg
+                ModeReg, ControlReg, (_) => { }, (_) => { },
+                TextReg, SpriteIndexReg, SpriteXLoReg, SpriteXHiReg,
+                SpriteYReg, SpriteTextureReg, TileXReg, TileYReg,
+                TileTextureReg, TextureIndexReg, TextureOffsetReg, TextureColorReg
             ];
         }
 
@@ -220,16 +208,6 @@ namespace Emu6502Gui
                 control = bc.Data;
         }
 
-        private void TextColumnReg(IDeviceInterface bc)
-        {
-
-        }
-
-        private void TextRowReg(IDeviceInterface bc)
-        {
-
-        }
-
         private void TextReg(IDeviceInterface bc)
         {
 
@@ -237,33 +215,34 @@ namespace Emu6502Gui
 
         private void SpriteIndexReg(IDeviceInterface bc)
         {
-            spriteXHigh = false;
             if (bc.Rwb)
                 bc.Data = spriteIndex;
             else if (bc.Data < SPRITE_COUNT)
                 spriteIndex = bc.Data;
         }
         
-        private void SpriteXReg(IDeviceInterface bc)
+        private void SpriteXLoReg(IDeviceInterface bc)
         {
             if (bc.Rwb)
-            {
-                if (spriteXHigh)
-                    bc.Data = sprites[spriteIndex].XHi;
-                else
-                    bc.Data = sprites[spriteIndex].XLo;
-            }
+                bc.Data = sprites[spriteIndex].XLo;
             else
             {
                 RemoveSprite(sprites[spriteIndex]);
-                if (spriteXHigh)
-                    sprites[spriteIndex].XHi = bc.Data;
-                else
-                    sprites[spriteIndex].XLo = bc.Data;
+                sprites[spriteIndex].XLo = bc.Data;
                 DrawSprite(sprites[spriteIndex]);
             }
+        }
 
-            spriteXHigh = !spriteXHigh;
+        private void SpriteXHiReg(IDeviceInterface bc)
+        {
+            if (bc.Rwb)
+                bc.Data = sprites[spriteIndex].XHi;
+            else
+            {
+                RemoveSprite(sprites[spriteIndex]);
+                sprites[spriteIndex].XHi = bc.Data;
+                DrawSprite(sprites[spriteIndex]);
+            }
         }
 
         private void SpriteYReg(IDeviceInterface bc)
@@ -317,15 +296,15 @@ namespace Emu6502Gui
                 // TODO: Redraw sprites over the tile. Right now just drawing all sprites.
                 foreach (Sprite sprite in sprites)
                     DrawSprite(sprite);
-            }
 
-            if (AutoIncTileIndex)
-            {
-                tileX++;
-                if ((tileX %= TILE_COLUMNS) == 0)
+                if (AutoIncTileIndex)
                 {
-                    tileY++;
-                    tileY %= TILE_ROWS;
+                    tileX++;
+                    if ((tileX %= TILE_COLUMNS) == 0)
+                    {
+                        tileY++;
+                        tileY %= TILE_ROWS;
+                    }
                 }
             }
         }
@@ -364,13 +343,13 @@ namespace Emu6502Gui
 
                 //for (int i = 0; i < sprites.Length; i++)
                 //    DrawSprite(sprites[i]);
-            }
 
-            if (AutoIncTextureIndex)
-            {
-                textureOffset++;
-                if ((textureOffset %= Texture.TEXTURE_COLOR_DATA_SIZE) == 0)
-                    textureIndex++;
+                if (AutoIncTextureIndex)
+                {
+                    textureOffset++;
+                    if ((textureOffset %= Texture.TEXTURE_COLOR_DATA_SIZE) == 0)
+                        textureIndex++;
+                }
             }
         }
         #endregion Register Handlers
@@ -439,12 +418,24 @@ namespace Emu6502Gui
 
             private static readonly Dictionary<Color, byte> PALETTE_REVERSE = new Dictionary<Color, byte>()
             {
-                { Color.Black, 0 },
-                { Color.Red, 1 },
-                { Color.Green, 2 },
-                { Color.Blue, 3 },
-                // TODO: Select colors.
-                { Color.White, 7 }
+                { Color.FromArgb(0, 0, 0), 0 },
+                { Color.FromArgb(0, 0, 255), 1 },
+                { Color.FromArgb(0, 255, 0), 2 },
+                { Color.FromArgb(0, 255, 255), 3 },
+                { Color.FromArgb(255, 0, 0), 4 },
+                { Color.FromArgb(255, 0, 255), 5 },
+                { Color.FromArgb(255, 255, 0), 6 },
+                //{ Color.FromArgb(255, 255, 255), 7 }, // Should probably be the color used as transparency.
+
+                { Color.FromArgb(127, 127, 127), 8 },
+                { Color.FromArgb(127, 127, 255), 9 },
+                { Color.FromArgb(127, 255, 127), 10 },
+                { Color.FromArgb(127, 255, 255), 11 },
+                { Color.FromArgb(255, 127, 127), 12 },
+                { Color.FromArgb(255, 127, 255), 13 },
+                { Color.FromArgb(255, 255, 127), 14 },
+                { Color.FromArgb(255, 255, 255), 15 }
+
             };
 
             // Every 4 bits is a pixel's color value. The very first pixel is the low nibble of the first byte,

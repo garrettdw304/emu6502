@@ -35,7 +35,6 @@
             // timer1
             // 
             timer1.Enabled = true;
-            timer1.Interval = 1000;
             timer1.Tick += timer1_Tick;
             // 
             // GraphicsChipOutput
@@ -45,6 +44,7 @@
             ClientSize = new Size(800, 450);
             Name = "GraphicsChipOutput";
             Text = "GraphicsChipOutput";
+            Load += GraphicsChipOutput_Load;
             ResumeLayout(false);
         }
 

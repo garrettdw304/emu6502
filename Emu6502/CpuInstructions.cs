@@ -103,9 +103,15 @@
             RMW(ASL, 2);
         }
 
+        /// <summary>
+        /// Reset memory bit.
+        /// </summary>
         private void RMB0_ZPG_07()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b1111_1110), 2);
         }
 
         /// <summary>
@@ -239,9 +245,15 @@
             RMW(ASL, 3);
         }
 
+        /// <summary>
+        /// Reset memory bit.
+        /// </summary>
         private void RMB1_ZPG_17()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b1111_1101), 2);
         }
 
         /// <summary>
@@ -425,9 +437,15 @@
             RMW(ROL, 2);
         }
 
+        /// <summary>
+        /// Reset memory bit 2.
+        /// </summary>
         private void RMB2_ZPG_27()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b1111_1011), 2);
         }
 
         /// <summary>
@@ -580,9 +598,15 @@
             RMW(ROL, 3);
         }
 
+        /// <summary>
+        /// Reset memory bit.
+        /// </summary>
         private void RMB3_ZPG_37()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b1111_0111), 2);
         }
 
         /// <summary>
@@ -760,9 +784,15 @@
             RMW(LSR, 2);
         }
 
+        /// <summary>
+        /// Reset memory bit.
+        /// </summary>
         private void RMB4_ZPG_47()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b1110_1111), 2);
         }
 
         /// <summary>
@@ -898,9 +928,15 @@
             RMW(LSR, 3);
         }
 
+        /// <summary>
+        /// Reset memory bit.
+        /// </summary>
         private void RMB5_ZPG_57()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b1101_1111), 2);
         }
 
         /// <summary>
@@ -1074,9 +1110,15 @@
             RMW(ROR, 2);
         }
 
+        /// <summary>
+        /// Reset memory bit.
+        /// </summary>
         private void RMB6_ZPG_67()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b1011_1111), 2);
         }
 
         /// <summary>
@@ -1235,9 +1277,15 @@
             RMW(ROR, 3);
         }
 
+        /// <summary>
+        /// Reset memory bit.
+        /// </summary>
         private void RMB7_ZPG_77()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => RMB(0b0111_1111), 2);
         }
 
         /// <summary>
@@ -1393,14 +1441,32 @@
             }
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB0_ZPG_87()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b0000_0001), 2);
         }
 
         private void DEY_IMPL_88()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                SetNZ(--y);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void BIT_IMM_89()
@@ -1570,9 +1636,15 @@
             }
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB1_ZPG_97()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b0000_0010), 2);
         }
 
         private void TYA_IMPL_98()
@@ -1747,9 +1819,15 @@
             }
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB2_ZPG_A7()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b0000_0100), 2);
         }
 
         private void TAY_IMPL_A8()
@@ -1912,9 +1990,15 @@
             }
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB3_ZPG_B7()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b0000_1000), 2);
         }
 
         private void CLV_IMPL_B8()
@@ -1998,7 +2082,19 @@
 
         private void CPY_IMM_C0()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                CMP(y, bc.ReadCycle(pc));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2057,9 +2153,15 @@
             RMW(() => aluTmp--, 2);
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB4_ZPG_C7()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b0001_0000), 2);
         }
 
         private void INY_IMPL_C8()
@@ -2071,6 +2173,7 @@
                 step++;
             } else if (step == 1)
             {
+                _ = bc.ReadCycle(pc);
                 y++;
 
                 step = NEXT_INSTR_STEP;
@@ -2109,6 +2212,7 @@
             }
             else if (step == 1)
             {
+                _ = bc.ReadCycle(pc);
                 SetNZ(--x);
 
                 step = NEXT_INSTR_STEP;
@@ -2220,9 +2324,15 @@
             RMW(() => aluTmp--, 3);
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB5_ZPG_D7()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b0010_0000), 2);
         }
 
         private void CLD_IMPL_D8()
@@ -2345,9 +2455,15 @@
             RMW(() => aluTmp++, 2);
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB6_ZPG_E7()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b0100_0000), 2);
         }
 
         private void INX_IMPL_E8()
@@ -2357,7 +2473,19 @@
 
         private void SBC_IMM_E9()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                SBC(bc.ReadCycle(pc));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2473,9 +2601,15 @@
             RMW(() => aluTmp++, 3);
         }
 
+        /// <summary>
+        /// Set memory bit.
+        /// </summary>
         private void SMB7_ZPG_F7()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(() => SMB(0b1000_0000), 2);
         }
 
         private void SED_IMPL_F8()

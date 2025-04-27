@@ -23,7 +23,7 @@ namespace Emu6502Gui
         private readonly Ram ram;
         private readonly PushButtonInterruptors pbi;
         private readonly GraphicsChip graphicsChip;
-        private readonly GraphicsChipOutput graphicsChipForm;
+        private GraphicsChipOutput? graphicsChipForm;
         private readonly Bitmap graphicsChipBuffer;
 
         /// <summary>
@@ -46,7 +46,6 @@ namespace Emu6502Gui
             ram = new Ram(RAM_BASE_ADDRESS, RAM_SIZE);
             pbi = new PushButtonInterruptors(cpu.irq, cpu.nmi, cpu.rst);
             graphicsChipBuffer = new Bitmap(320, 240);
-            graphicsChipForm = new GraphicsChipOutput(graphicsChipBuffer);
             graphicsChip = new GraphicsChip(GRAPHICS_CHIP_BASE_ADDRESS, Graphics.FromImage(graphicsChipBuffer));
 
             // Connect devices
@@ -55,8 +54,6 @@ namespace Emu6502Gui
             cpu.bc.OnCycle += rom.OnCycle;
             cpu.bc.OnCycle += pbi.OnCycle;
             cpu.bc.OnCycle += graphicsChip.OnCycle;
-
-            graphicsChipForm.Show();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -328,6 +325,14 @@ namespace Emu6502Gui
                 else
                     serialPortDropdown.SelectedIndex = 0;
             }
+        }
+
+        private void graphicsBtn_Click(object sender, EventArgs e)
+        {
+            graphicsBtn.Enabled = false;
+            graphicsChipForm = new GraphicsChipOutput(graphicsChipBuffer);
+            graphicsChipForm.FormClosed += (o,e) => graphicsBtn.Enabled = true;
+            graphicsChipForm.Show();
         }
     }
 }
