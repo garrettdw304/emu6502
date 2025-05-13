@@ -363,7 +363,7 @@
             else if (step == 1)
             {
                 _ = bc.ReadCycle(pc);
-                a++;
+                SetNZ(a++);
 
                 step = NEXT_INSTR_STEP;
             }
@@ -762,7 +762,19 @@
 
         private void DEC_A_3A()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                SetNZ(a--);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -940,7 +952,21 @@
 
         private void LSR_A_4A()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                int result = a >> 1;
+                SetNZ((byte)result);
+                C = (a & 1) != 0;
+                a = (byte)result;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1031,7 +1057,15 @@
 
         private void EOR_ZPGIND_52()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+
+            if (step == 4)
+            {
+                SetNZ(a ^= bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1305,7 +1339,22 @@
 
         private void ROR_A_6A()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                uint result = (uint)((a >> 1) | (C ? 0b1000_0000 : 0b0000_0000));
+                SetNZ((byte)result);
+                C = (a & 1) != 0;
+                a = (byte)result;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void JMP_IND_6C()
@@ -1431,7 +1480,15 @@
 
         private void STZ_ZPGX_74()
         {
-            throw new NotImplementedException();
+            if (ZPGI(x))
+                return;
+
+            if (step == 3)
+            {
+                bc.WriteCycle(effectiveAddress, 0);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1933,7 +1990,15 @@
 
         private void STZ_ABSX_9E()
         {
-            throw new NotImplementedException();
+            if (ABSI(x))
+                return;
+
+            if (step == 4)
+            {
+                bc.WriteCycle(effectiveAddress, 0);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2267,7 +2332,19 @@
 
         private void CLV_IMPL_B8()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                V = false;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2520,7 +2597,15 @@
 
         private void CPY_ABS_CC()
         {
-            throw new NotImplementedException();
+            if (ABS())
+                return;
+
+            if (step == 3)
+            {
+                CMP(y, bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2584,7 +2669,15 @@
 
         private void CMP_ZPGIND_D2()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+            
+            if (step == 4)
+            {
+                CMP(a, bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2709,7 +2802,19 @@
 
         private void CPX_IMM_E0()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                CMP(x, bc.ReadCycle(pc));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2730,7 +2835,16 @@
 
         private void CPX_ZPG_E4()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            if (step == 2)
+            {
+                CMP(x, bc.ReadCycle(effectiveAddress));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2829,7 +2943,16 @@
 
         private void CPX_ABS_EC()
         {
-            throw new NotImplementedException();
+            if (ABS())
+                return;
+
+            if (step == 3)
+            {
+                CMP(x, bc.ReadCycle(effectiveAddress));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2894,7 +3017,15 @@
 
         private void SBC_ZPGIND_F2()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+
+            if (step == 4)
+            {
+                SBC(bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2937,7 +3068,19 @@
 
         private void SED_IMPL_F8()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                D = true;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
