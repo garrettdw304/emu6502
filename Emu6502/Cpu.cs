@@ -178,18 +178,18 @@
                     p &= unchecked((byte)~V_MASK);
             }
         }
-        public bool B
+        public bool D
         {
             get
             {
-                return (p & B_MASK) != 0;
+                return (p & D_MASK) != 0;
             }
             set
             {
                 if (value)
-                    p |= B_MASK;
+                    p |= D_MASK;
                 else
-                    p &= unchecked((byte)~B_MASK);
+                    p &= unchecked((byte)~D_MASK);
             }
         }
 
@@ -237,10 +237,10 @@
                 TYA_IMPL_98, STA_ABSY_99, TXS_IMPL_9A, None, STZ_ABS_9C, STA_ABSX_9D, STZ_ABSX_9E, BBS1_REL_9F,
                 LDY_IMM_A0, LDA_XIND_A1, LDX_IMM_A2, None, LDY_ZPG_A4, LDA_ZPG_A5, LDX_ZPG_A6, SMB2_ZPG_A7,
                 TAY_IMPL_A8, LDA_IMM_A9, TAX_IMPL_AA, None, LDY_ABS_AC, LDA_ABS_AD, LDX_ABS_AE, BBS2_REL_AF,
-                BCS_REL_B0, LDA_INDY_B1, None, None, LDY_ZPGX_B4, LDA_ZPGX_B5, LDX_ZPGY_B6, None,
-                CLV_IMPL_B8, LDA_ABSY_B9, None, None, LDY_ABSX_BC, LDA_ABSX_BD, LDX_ABSY_BE, BBS3_REL_BF,
+                BCS_REL_B0, LDA_INDY_B1, LDA_ZPGIND_B2, None, LDY_ZPGX_B4, LDA_ZPGX_B5, LDX_ZPGY_B6, None,
+                CLV_IMPL_B8, LDA_ABSY_B9, TSX_IMPL_BA, None, LDY_ABSX_BC, LDA_ABSX_BD, LDX_ABSY_BE, BBS3_REL_BF,
                 CPY_IMM_C0, CMP_XIND_C1, None, None, CPY_ZPG_C4, CMP_ZPG_C5, DEC_ZPG_C6, SMB4_ZPG_C7,
-                INY_IMPL_C8, CMP_IMM_C9, DEX_IMPL_CA, WAI_IMP_CB, CPY_ABS_CC, CMP_ABS_CD, DEC_ABS_CE, BBS4_REL_CF,
+                INY_IMPL_C8, CMP_IMM_C9, DEX_IMPL_CA, WAI_IMPL_CB, CPY_ABS_CC, CMP_ABS_CD, DEC_ABS_CE, BBS4_REL_CF,
                 BNE_REL_D0, CMP_INDY_D1, CMP_ZPGIND_D2, None, None, CMP_ZPGX_D5, DEC_ZPGX_D6, SMB5_ZPG_D7,
                 CLD_IMPL_D8, CMP_ABSY_D9, PHX_IMPL_DA, STP_IMPL_DB, None, CMP_ABSX_DD, DEC_ABSX_DE, BBS5_REL_DF,
                 CPX_IMM_E0, SBC_XIND_E1, None, None, CPX_ZPG_E4, SBC_ZPG_E5, INC_ZPG_E6, SMB6_ZPG_E7,
@@ -321,6 +321,7 @@
         
         private void None()
         {
+            throw new InvalidOperationException();
             // TODO: Should probably be split up into the individiual NOPs for each reserved opcode or into as few as can
             // implement appropriate cycle and pc incrementing behavior.
         }
@@ -597,6 +598,70 @@
         }
 
         /// <summary>
+        /// Branch on bit.
+        /// </summary>
+        /// <param name="bitMask"></param>
+        /// <param name="onSet"></param>
+        private void BB(byte bitMask, bool onSet)
+        {
+
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                effectiveAddress = bc.ReadCycle(pc);
+                pc++;
+
+                step++;
+            }
+            else if (step == 2)
+            {
+                aluTmp = bc.ReadCycle(effectiveAddress);
+
+                step++;
+            }
+            else if (step == 3)
+            {
+                effectiveAddress = bc.ReadCycle(pc);
+                pc++;
+
+                step++;
+            }
+            else if (step == 4)
+            {
+                if (onSet ? ((aluTmp & bitMask) != 0) : ((aluTmp & bitMask) == 0))
+                {
+                    _ = bc.ReadCycle(pc);
+                    int result = PcL + (sbyte)effectiveAddress;
+                    PcL = (byte)result;
+
+                    if (result > byte.MaxValue)
+                        step++;
+                    else
+                        step = NEXT_INSTR_STEP;
+                }
+                else
+                {
+                    opcode = bc.ReadCycle(pc);
+                    pc++;
+
+                    step = PIPELINED_FETCH_STEP;
+                }
+            }
+            else if (step == 5) // Skipped if branch was taken and page boundry was not crossed or branch was not taken.
+            {
+                _ = bc.ReadCycle(pc);
+                PcH++;
+
+                step = NEXT_INSTR_STEP;
+            }
+        }
+
+        /// <summary>
         /// Reads a zero page address and stores it into <see cref="effectiveAddress"/>.
         /// </summary>
         /// <returns>true if the step was handled in this function (steps 0-1).</returns>
@@ -798,6 +863,47 @@
             {
                 _ = bc.ReadCycle(effectiveAddress);
                 EffectiveAddressH++;
+
+                step++;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Takes 4 steps and gets the effective address using indirect addressing and stores it in
+        /// <see cref="effectiveAddress"/>.
+        /// </summary>
+        /// <returns></returns>
+        private bool ZPGIND()
+        {
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+                return true;
+            }
+            else if (step == 1)
+            {
+                indAddr = bc.ReadCycle(pc);
+                pc++;
+
+                step++;
+                return true;
+            }
+            else if (step == 2)
+            {
+                EffectiveAddressL = bc.ReadCycle(indAddr);
+                indAddr++;
+
+                step++;
+                return true;
+            }
+            else if (step == 3)
+            {
+                EffectiveAddressH = bc.ReadCycle(indAddr);
 
                 step++;
                 return true;

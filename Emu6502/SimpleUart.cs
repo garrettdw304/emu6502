@@ -5,7 +5,8 @@ namespace Emu6502
     public class SimpleUart : Device
     {
         // Status Bits
-        private const byte RX_NOT_EMPTY_MASK = 0b0000_0001;
+        private const byte RX_FULL_MASK = 0b0000_0001;
+        private const byte TX_EMPTY_MASK = 0b0000_0010;
 
         // Registers
         private const ushort RXTX_REG = 0;
@@ -27,7 +28,9 @@ namespace Emu6502
             {
                 byte toReturn = 0;
                 if (!rx.IsEmpty)
-                    toReturn |= RX_NOT_EMPTY_MASK;
+                    toReturn |= RX_FULL_MASK;
+                if (tx.IsEmpty)
+                    toReturn |= TX_EMPTY_MASK;
                 return toReturn;
             }
         }
@@ -61,17 +64,25 @@ namespace Emu6502
             {
                 if (address == RXTX_REG)
                 {
-                    tx.Enqueue(bc.Data);
-                    OnDataAvailable?.Invoke();
+                    if (tx.IsEmpty)
+                    {
+                        tx.Enqueue(bc.Data);
+                        OnDataAvailable?.Invoke();
+                    }
                 }
                 else if (address == STATUS_REG)
                     _ = 0; // TODO: Software reset
             }
         }
 
-        public void Send(byte data)
+        public bool TrySend(byte data)
         {
-            rx.Enqueue(data);
+            if (rx.IsEmpty)
+            {
+                rx.Enqueue(data);
+                return true;
+            }
+            else return false;
         }
 
         public bool TryReceive(out byte data)

@@ -36,7 +36,7 @@
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;
-                B = false;
+                D = false;
 
                 step++;
             }
@@ -71,9 +71,20 @@
             }
         }
 
+        /// <summary>
+        /// Test and set bits.
+        /// </summary>
         private void TSB_ZPG_04()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(
+                () => 
+                {
+                    Z = (aluTmp & a) == 0;
+                    aluTmp |= a;
+                }, 2);
         }
 
         /// <summary>
@@ -144,12 +155,39 @@
 
         private void ASL_A_0A()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+
+                int result = a << 1;
+                SetNZ((byte)result);
+                C = result > byte.MaxValue;
+                a = (byte)result;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
+        /// <summary>
+        /// Test and set bits.
+        /// </summary>
         private void TSB_ABS_0C()
         {
-            throw new NotImplementedException();
+            if (ABS())
+                return;
+
+            RMW(
+                () =>
+                {
+                    Z = (aluTmp & a) == 0;
+                    aluTmp |= a;
+                }, 2);
         }
 
         /// <summary>
@@ -179,9 +217,12 @@
             RMW(ASL, 3);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR0_REL_0F()
         {
-            throw new NotImplementedException();
+            BB(0b0000_0001, false);
         }
 
         /// <summary>
@@ -210,12 +251,31 @@
 
         private void ORA_ZPGIND_12()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+
+            if (step == 4)
+            {
+                SetNZ(a |= bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
+        /// <summary>
+        /// Test and reset bits.
+        /// </summary>
         private void TRB_ZPG_14()
         {
-            throw new NotImplementedException();
+            if (ZPG())
+                return;
+
+            RMW(
+                () =>
+                {
+                    Z = (aluTmp & a) == 0;
+                    aluTmp &= (byte)~a;
+                }, 2);
         }
 
         /// <summary>
@@ -294,12 +354,35 @@
 
         private void INC_A_1A()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                a++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
+        /// <summary>
+        /// Test and reset bits.
+        /// </summary>
         private void TRB_ABS_1C()
         {
-            throw new NotImplementedException();
+            if (ABS())
+                return;
+
+            RMW(
+                () =>
+                {
+                    Z = (aluTmp & a) == 0;
+                    aluTmp &= (byte)~a;
+                }, 2);
         }
 
         /// <summary>
@@ -329,9 +412,12 @@
             RMW(ASL, 4);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR1_REL_1F()
         {
-            throw new NotImplementedException();
+            BB(0b0000_0010, false);
         }
 
         /// <summary>
@@ -478,7 +564,22 @@
 
         private void ROL_A_2A()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                uint result = (uint)((a << 1) | (C ? 1 : 0));
+                SetNZ((byte)result);
+                C = result > byte.MaxValue;
+                a = (byte)result;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -524,11 +625,17 @@
             RMW(ROL, 3);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR2_REL_2F()
         {
-            throw new NotImplementedException();
+            BB(0b0000_0100, false);
         }
 
+        /// <summary>
+        /// Branch on minus. (N = 1)
+        /// </summary>
         private void BMI_REL_30()
         {
             BR(N);
@@ -552,7 +659,15 @@
 
         private void AND_ZPGIND_32()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+
+            if (step == 4)
+            {
+                SetNZ(a &= bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -693,9 +808,12 @@
             RMW(ROL, 4);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR3_REL_3F()
         {
-            throw new NotImplementedException();
+            BB(0b0000_1000, false);
         }
 
         /// <summary>
@@ -805,7 +923,19 @@
 
         private void EOR_IMM_49()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                SetNZ(a ^= bc.ReadCycle(pc));
+                pc++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void LSR_A_4A()
@@ -867,9 +997,12 @@
             RMW(LSR, 3);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR4_REL_4F()
         {
-            throw new NotImplementedException();
+            BB(0b0001_0000, false);
         }
 
         /// <summary>
@@ -1010,9 +1143,12 @@
             RMW(LSR, 4);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR5_REL_5F()
         {
-            throw new NotImplementedException();
+            BB(0b0010_0000, false);
         }
 
         /// <summary>
@@ -1080,7 +1216,25 @@
 
         private void STZ_ZPG_64()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                effectiveAddress = bc.ReadCycle(pc);
+                pc++;
+
+                step++;
+            }
+            else if (step == 2)
+            {
+                bc.WriteCycle(effectiveAddress, 0);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1156,7 +1310,6 @@
 
         private void JMP_IND_6C()
         {
-            throw new NotImplementedException();
             if (step == 0)
             {
                 pc++;
@@ -1179,7 +1332,27 @@
             }
             else if (step == 3)
             {
+                PcL = bc.ReadCycle(effectiveAddress);
+                int result = EffectiveAddressL + 1;
+                PcL = (byte)result;
 
+                if (result > byte.MaxValue)
+                    step++;
+                else
+                    step += 2;
+            }
+            else if (step == 4)
+            {
+                _ = bc.ReadCycle(effectiveAddress);
+                PcH++;
+
+                step++;
+            }
+            else if (step == 5)
+            {
+                PcH = bc.ReadCycle(effectiveAddress);
+
+                step = NEXT_INSTR_STEP;
             }
         }
 
@@ -1211,9 +1384,12 @@
             RMW(ROR, 3);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR6_REL_6F()
         {
-            throw new NotImplementedException();
+            BB(0b0100_0000, false);
         }
 
         /// <summary>
@@ -1242,7 +1418,15 @@
 
         private void ADC_ZPGIND_72()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+
+            if (step == 4)
+            {
+                ADC(bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         private void STZ_ZPGX_74()
@@ -1364,9 +1548,12 @@
             RMW(ROR, 4);
         }
 
+        /// <summary>
+        /// Branch on bit reset.
+        /// </summary>
         private void BBR7_REL_7F()
         {
-            throw new NotImplementedException();
+            BB(0b1000_0000, false);
         }
 
         /// <summary>
@@ -1452,6 +1639,9 @@
             RMW(() => SMB(0b0000_0001), 2);
         }
 
+        /// <summary>
+        /// Decrement y.
+        /// </summary>
         private void DEY_IMPL_88()
         {
             if (step == 0)
@@ -1469,6 +1659,9 @@
             }
         }
 
+        /// <summary>
+        /// Bit.
+        /// </summary>
         private void BIT_IMM_89()
         {
             if (step == 0)
@@ -1554,9 +1747,12 @@
             }
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS0_REL_8F()
         {
-            throw new NotImplementedException();
+            BB(0b0000_0001, true);
         }
 
         /// <summary>
@@ -1585,7 +1781,15 @@
 
         private void STA_ZPGIND_92()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+
+            if (step == 4)
+            {
+                bc.WriteCycle(effectiveAddress, a);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1649,7 +1853,18 @@
 
         private void TYA_IMPL_98()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            } else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                SetNZ(a = y);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1689,7 +1904,15 @@
 
         private void STZ_ABS_9C()
         {
-            throw new NotImplementedException();
+            if (ABS())
+                return;
+
+            if (step == 3)
+            {
+                bc.WriteCycle(effectiveAddress, 0);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1713,11 +1936,17 @@
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS1_REL_9F()
         {
-            throw new NotImplementedException();
+            BB(0b0000_0010, true);
         }
 
+        /// <summary>
+        /// Load y.
+        /// </summary>
         private void LDY_IMM_A0()
         {
             if (step == 0)
@@ -1832,7 +2061,19 @@
 
         private void TAY_IMPL_A8()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                SetNZ(y = a);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1857,7 +2098,19 @@
         
         private void TAX_IMPL_AA()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                SetNZ(x = a);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -1908,9 +2161,12 @@
             }
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS2_REL_AF()
         {
-            throw new NotImplementedException();
+            BB(0b0000_0100, true);
         }
 
         /// <summary>
@@ -1939,7 +2195,15 @@
 
         private void LDA_ZPGIND_B2()
         {
-            throw new NotImplementedException();
+            if (ZPGIND())
+                return;
+
+            if (step == 4)
+            {
+                SetNZ(a = bc.ReadCycle(effectiveAddress));
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2024,7 +2288,18 @@
 
         private void TSX_IMPL_BA()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            } else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                SetNZ(x = s);
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2075,11 +2350,17 @@
             }
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS3_REL_BF()
         {
-            throw new NotImplementedException();
+            BB(0b0000_1000, true);
         }
 
+        /// <summary>
+        /// Compare y.
+        /// </summary>
         private void CPY_IMM_C0()
         {
             if (step == 0)
@@ -2113,6 +2394,9 @@
             }
         }
 
+        /// <summary>
+        /// Compare y.
+        /// </summary>
         private void CPY_ZPG_C4()
         {
             if (ZPG())
@@ -2164,6 +2448,9 @@
             RMW(() => SMB(0b0001_0000), 2);
         }
 
+        /// <summary>
+        /// Increment y.
+        /// </summary>
         private void INY_IMPL_C8()
         {
             if (step == 0)
@@ -2219,7 +2506,7 @@
             }
         }
 
-        private void WAI_IMP_CB()
+        private void WAI_IMPL_CB()
         {
             throw new NotImplementedException();
             if (step == 0)
@@ -2263,9 +2550,12 @@
             RMW(() => aluTmp--, 3);
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS4_REL_CF()
         {
-            throw new NotImplementedException();
+            BB(0b0001_0000, true);
         }
 
         /// <summary>
@@ -2337,7 +2627,19 @@
 
         private void CLD_IMPL_D8()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                D = false;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
         /// <summary>
@@ -2397,9 +2699,12 @@
             RMW(() => aluTmp--, 4);
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS5_REL_DF()
         {
-            throw new NotImplementedException();
+            BB(0b0010_0000, true);
         }
 
         private void CPX_IMM_E0()
@@ -2468,9 +2773,24 @@
 
         private void INX_IMPL_E8()
         {
-            throw new NotImplementedException();
+            if (step == 0)
+            {
+                pc++;
+
+                step++;
+            }
+            else if (step == 1)
+            {
+                _ = bc.ReadCycle(pc);
+                x++;
+
+                step = NEXT_INSTR_STEP;
+            }
         }
 
+        /// <summary>
+        /// Subtract with borrow.
+        /// </summary>
         private void SBC_IMM_E9()
         {
             if (step == 0)
@@ -2540,9 +2860,12 @@
             RMW(() => aluTmp++, 3);
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS6_REL_EF()
         {
-            throw new NotImplementedException();
+            BB(0b0100_0000, true);
         }
 
         /// <summary>
@@ -2669,9 +2992,12 @@
             RMW(() => aluTmp++, 4);
         }
 
+        /// <summary>
+        /// Branch on bit set.
+        /// </summary>
         private void BBS7_REL_FF()
         {
-            throw new NotImplementedException();
+            BB(0b1000_0000, true);
         }
 
         private void NMI()
@@ -2708,7 +3034,7 @@
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;
-                B = false;
+                D = false;
 
                 step++;
             }
@@ -2761,7 +3087,7 @@
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;
-                B = false;
+                D = false;
 
                 step++;
             }
@@ -2823,7 +3149,7 @@
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;
-                B = false;
+                D = false;
 
                 step++;
             }

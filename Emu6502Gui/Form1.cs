@@ -331,7 +331,7 @@ namespace Emu6502Gui
         {
             graphicsBtn.Enabled = false;
             graphicsChipForm = new GraphicsChipOutput(graphicsChipBuffer);
-            graphicsChipForm.FormClosed += (o,e) => graphicsBtn.Enabled = true;
+            graphicsChipForm.FormClosed += (o, e) => graphicsBtn.Enabled = true;
             graphicsChipForm.Show();
         }
     }
