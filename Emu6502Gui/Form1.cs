@@ -17,14 +17,16 @@ namespace Emu6502Gui
         private readonly Emulation emu;
         private readonly Cpu cpu;
 
-        private readonly Rom rom;
-        private VirtualUart? uart;
-        private readonly SimpleTimer timer;
         private readonly Ram ram;
+        private Uart uart;
+        private readonly SimpleTimer timer;
         private readonly PushButtonInterruptors pbi;
         private readonly GraphicsChip graphicsChip;
         private GraphicsChipOutput? graphicsChipForm;
         private readonly Bitmap graphicsChipBuffer;
+        private readonly Rom rom;
+
+        private OpenTermDialog? termDialog;
 
         /// <summary>
         /// First row displayed in mem display.
@@ -41,19 +43,21 @@ namespace Emu6502Gui
             emu.OnCycle += cpu.Cycle;
 
             // Create devices
-            rom = new Rom(ROM_BASE_ADDRESS, ROM_SIZE);
-            timer = new SimpleTimer(TIMER_BASE_ADDRESS, cpu.irq);
             ram = new Ram(RAM_BASE_ADDRESS, RAM_SIZE);
-            pbi = new PushButtonInterruptors(cpu.irq, cpu.nmi, cpu.rst);
+            uart = new Uart(UART_BASE_ADDRESS);
+            timer = new SimpleTimer(TIMER_BASE_ADDRESS, cpu.irq);
             graphicsChipBuffer = new Bitmap(320, 240);
             graphicsChip = new GraphicsChip(GRAPHICS_CHIP_BASE_ADDRESS, Graphics.FromImage(graphicsChipBuffer));
+            rom = new Rom(ROM_BASE_ADDRESS, ROM_SIZE);
+            pbi = new PushButtonInterruptors(cpu.irq, cpu.nmi, cpu.rst);
 
             // Connect devices
+            cpu.bc.OnCycle += uart.OnCycle;
             cpu.bc.OnCycle += ram.OnCycle;
             cpu.bc.OnCycle += timer.OnCycle;
+            cpu.bc.OnCycle += graphicsChip.OnCycle;
             cpu.bc.OnCycle += rom.OnCycle;
             cpu.bc.OnCycle += pbi.OnCycle;
-            cpu.bc.OnCycle += graphicsChip.OnCycle;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -70,7 +74,7 @@ namespace Emu6502Gui
                 cycleBtn.Enabled = true;
                 clockRateTB.Enabled = true;
                 loadRomBtn.Enabled = true;
-                serialPortDropdown.Enabled = true;
+                uartDropdown.Enabled = true;
             }
             else
             {
@@ -85,7 +89,7 @@ namespace Emu6502Gui
                 cycleBtn.Enabled = false;
                 clockRateTB.Enabled = false;
                 loadRomBtn.Enabled = false;
-                serialPortDropdown.Enabled = false;
+                uartDropdown.Enabled = false;
             }
         }
 
@@ -280,50 +284,47 @@ namespace Emu6502Gui
             pbi.TriggerRST();
         }
 
-        private void serialPortDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        private void uartDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
-            object? selected = serialPortDropdown.SelectedItem;
+            object? selected = uartDropdown.SelectedItem;
 
-            if (uart != null)
+            if (uart.PortName != null)
             {
                 if (selected != null && uart.PortName == (string)selected)
                     return;
 
-                cpu.bc.OnCycle -= uart.OnCycle;
-                uart.Dispose();
-                uart = null;
+                uart.SetPort(null);
             }
 
-            if (selected == null || serialPortDropdown.SelectedIndex == 0)
+            if (selected == null || uartDropdown.SelectedIndex == 0)
                 return;
 
             string portName = (string)selected;
             try
             {
-                uart = new VirtualUart(UART_BASE_ADDRESS, portName);
-                cpu.bc.OnCycle += uart.OnCycle;
+                uart.SetPort(portName);
             }
             catch (UnauthorizedAccessException ex)
             {
                 MessageBox.Show(ex.Message, "Failed to connect to the port.");
-                serialPortDropdown.SelectedIndex = 0;
+                uartDropdown.SelectedIndex = 0;
             }
         }
 
         private void serialPortDropdown_DropDown(object sender, EventArgs e)
         {
-            string? oldName = uart?.PortName;
+            string? oldName = uart.PortName;
 
-            serialPortDropdown.Items.Clear();
-            serialPortDropdown.Items.Add("None");
-            serialPortDropdown.Items.AddRange(SerialPort.GetPortNames());
+            uartDropdown.Items.Clear();
+            uartDropdown.Items.Add("None");
+            uartDropdown.Items.AddRange(SerialPort.GetPortNames());
             if (oldName != null)
             {
-                int index = serialPortDropdown.Items.IndexOf(oldName);
+                int index = uartDropdown.Items.IndexOf(oldName);
                 if (index != -1)
-                    serialPortDropdown.SelectedIndex = index;
+                    uartDropdown.SelectedIndex = index;
                 else
-                    serialPortDropdown.SelectedIndex = 0;
+                    uartDropdown.SelectedIndex = 0;
             }
         }
 
@@ -333,6 +334,20 @@ namespace Emu6502Gui
             graphicsChipForm = new GraphicsChipOutput(graphicsChipBuffer);
             graphicsChipForm.FormClosed += (o, e) => graphicsBtn.Enabled = true;
             graphicsChipForm.Show();
+        }
+
+        private void terminalBtn_Click(object sender, EventArgs e)
+        {
+            if (termDialog != null)
+            {
+                terminalBtn.Enabled = false;
+                return;
+            }
+            terminalBtn.Enabled = false;
+
+            termDialog = new OpenTermDialog();
+            termDialog.FormClosed += (o, e) => { termDialog = null; terminalBtn.Enabled = true; };
+            termDialog.Show();
         }
     }
 }

@@ -13,6 +13,7 @@
             else if (step == 1)
             {
                 _ = bc.ReadCycle(pc);
+                pc++;
 
                 step++;
             }
@@ -32,7 +33,7 @@
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, (byte)(p | D_MASK));
+                bc.WriteCycle(ExpandedS, (byte)(p | B_MASK | R_MASK));
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;
@@ -65,7 +66,7 @@
 
             if (step == 5)
             {
-                SetNZ(a ^= bc.ReadCycle(effectiveAddress));
+                SetNZ(a |= bc.ReadCycle(effectiveAddress));
 
                 step = NEXT_INSTR_STEP;
             }
@@ -130,7 +131,7 @@
         /// </summary>
         private void PHP_IMPL_08()
         {
-            PH(p);
+            PH((byte)(p | B_MASK | R_MASK));
         }
 
         /// <summary>
@@ -363,7 +364,7 @@
             else if (step == 1)
             {
                 _ = bc.ReadCycle(pc);
-                SetNZ(a++);
+                SetNZ(++a);
 
                 step = NEXT_INSTR_STEP;
             }
@@ -771,7 +772,7 @@
             else if (step == 1)
             {
                 _ = bc.ReadCycle(pc);
-                SetNZ(a--);
+                SetNZ(--a);
 
                 step = NEXT_INSTR_STEP;
             }
@@ -1315,6 +1316,7 @@
         private void PLA_IMPL_68()
         {
             PL(ref a);
+            SetNZ(a);
         }
 
         /// <summary>
@@ -1383,7 +1385,7 @@
             {
                 PcL = bc.ReadCycle(effectiveAddress);
                 int result = EffectiveAddressL + 1;
-                PcL = (byte)result;
+                EffectiveAddressL = (byte)result;
 
                 if (result > byte.MaxValue)
                     step++;
@@ -1953,7 +1955,7 @@
             } else if (step == 1)
             {
                 _ = bc.ReadCycle(pc);
-                SetNZ(s = x);
+                s = x;
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2511,7 +2513,7 @@
             if (ZPG())
                 return;
 
-            RMW(() => aluTmp--, 2);
+            RMW(() => SetNZ(--aluTmp), 2);
         }
 
         /// <summary>
@@ -2538,7 +2540,7 @@
             } else if (step == 1)
             {
                 _ = bc.ReadCycle(pc);
-                y++;
+                SetNZ(++y);
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2632,7 +2634,7 @@
             if (ABS())
                 return;
 
-            RMW(() => aluTmp--, 3);
+            RMW(() => SetNZ(--aluTmp), 3);
         }
 
         /// <summary>
@@ -2704,7 +2706,7 @@
             if (ZPGI(x))
                 return;
 
-            RMW(() => aluTmp--, 3);
+            RMW(() => SetNZ(--aluTmp), 3);
         }
 
         /// <summary>
@@ -2789,7 +2791,7 @@
             if (ABSI(x))
                 return;
 
-            RMW(() => aluTmp--, 4);
+            RMW(() => SetNZ(--aluTmp), 4);
         }
 
         /// <summary>
@@ -2841,7 +2843,6 @@
             if (step == 2)
             {
                 CMP(x, bc.ReadCycle(effectiveAddress));
-                pc++;
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2871,7 +2872,7 @@
             if (ZPG())
                 return;
 
-            RMW(() => aluTmp++, 2);
+            RMW(() => SetNZ(++aluTmp), 2);
         }
 
         /// <summary>
@@ -2896,7 +2897,7 @@
             else if (step == 1)
             {
                 _ = bc.ReadCycle(pc);
-                x++;
+                SetNZ(++x);
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2949,7 +2950,6 @@
             if (step == 3)
             {
                 CMP(x, bc.ReadCycle(effectiveAddress));
-                pc++;
 
                 step = NEXT_INSTR_STEP;
             }
@@ -2980,7 +2980,7 @@
             if (ABS())
                 return;
 
-            RMW(() => aluTmp++, 3);
+            RMW(() => SetNZ(++aluTmp), 3);
         }
 
         /// <summary>
@@ -3052,7 +3052,7 @@
             if (ZPGI(x))
                 return;
 
-            RMW(() => aluTmp++, 3);
+            RMW(() => SetNZ(++aluTmp), 3);
         }
 
         /// <summary>
@@ -3132,7 +3132,7 @@
             if (ABSI(x))
                 return;
 
-            RMW(() => aluTmp++, 4);
+            RMW(() => SetNZ(++aluTmp), 4);
         }
 
         /// <summary>
@@ -3173,7 +3173,7 @@
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, p);
+                bc.WriteCycle(ExpandedS, (byte)(p | R_MASK));
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;
@@ -3226,7 +3226,7 @@
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, p);
+                bc.WriteCycle(ExpandedS, (byte)(p | R_MASK));
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;
@@ -3288,7 +3288,7 @@
             }
             else if (step == 4)
             {
-                bc.WriteCycle(ExpandedS, p);
+                bc.WriteCycle(ExpandedS, (byte)(p | R_MASK));
                 s--;
                 // Not sure when to do this. Definitely after we push P.
                 I = true;

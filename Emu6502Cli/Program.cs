@@ -7,49 +7,8 @@ namespace Emu6502Cli
     {
         static void Main(string[] args)
         {
-            Console.WriteLine($"Args: {string.Join(' ', args)}");
-
-            // Create emulation and cpu and connect them
-            Emulation emu = new Emulation();
-            Cpu cpu = new Cpu();
-            emu.OnCycle += cpu.Cycle;
-
-            // Create devices
-            Ram ram = new Ram(0, 0x8000);
-            VirtualUart uart = new VirtualUart(0xB200, "COM99"); // COM95--COM96
-            Console.WriteLine("Virtual serial port initialized. Use COM96 to connect.");
-            SimpleTimer timer = new SimpleTimer(0xB300, cpu.irq);
-            Rom rom = new Rom(0xC000, 0x4000);
-            rom.Program(args[0]);
-
-            // Connect devices
-            cpu.bc.OnCycle += ram.OnCycle;
-            cpu.bc.OnCycle += uart.OnCycle;
-            cpu.bc.OnCycle += timer.OnCycle;
-            cpu.bc.OnCycle += rom.OnCycle;
-
-            // Start a stopwatch
-            Stopwatch sw = Stopwatch.StartNew();
-
-            // Run the emulation at 1MHz
-            emu.Continue(1_000_000);
-
-            // Stop the emulation
-            Console.WriteLine("Press enter to stop the emulation.");
-            Console.ReadLine();
-            emu.Stop(true);
-            sw.Stop();
-
-            // Print some stats
-            Console.WriteLine($"Cycles emulated: {emu.CycleCount}");
-            Console.WriteLine($"Stopwatch: {sw.ElapsedMilliseconds} ms");
-            Console.WriteLine($"Delta: {sw.ElapsedMilliseconds * 1000 - (long)emu.CycleCount} cycles");
-            Console.WriteLine($"Current pc: {cpu.pc:X2}");
-            Console.WriteLine("Flags: NV-BDIZC");
-            Console.WriteLine($"Flags: {Convert.ToString(cpu.p, 2).PadLeft(8, '0')}");
-
-            Console.WriteLine("Press enter to exit.");
-            Console.ReadLine();
+            //RunKlausTests();
+            RunDeltaTests2(1_000_000, 1000, 10000);
         }
 
         /// <summary>
@@ -64,6 +23,7 @@ namespace Emu6502Cli
             Rom rom = new Rom(0, 65536);
             byte[] romData = new byte[65536];
             Array.Fill(romData, (byte)0xEA); // NOP
+            rom.Program(romData);
             cpu.bc.OnCycle += rom.OnCycle;
 
             for (int i = startMillionCycles; i <= endMillionCycles; i++)
@@ -77,6 +37,92 @@ namespace Emu6502Cli
 
             Console.WriteLine("Done. Press enter to exit.");
             Console.ReadLine();
+        }
+
+        private static void RunDeltaTests2(int hz, int startMilliseconds, int endMilliseconds)
+        {
+            //byte[] romData = new byte[65536];
+            //Array.Fill(romData, (byte)0xEA); // NOP
+
+            for (int i = startMilliseconds; i <= endMilliseconds; i+=1000)
+            {
+                Emulation emu = new Emulation();
+                Cpu cpu = new Cpu();
+                emu.OnCycle += cpu.Cycle;
+                Rom rom = new Rom(0, 65536);
+                rom.Program("C:\\Users\\garre\\Downloads\\6502_65C02_functional_tests-master\\6502_functional_test.bin");
+                cpu.bc.OnCycle += rom.OnCycle;
+
+                Console.WriteLine("Starting test for ~" + i + " milliseconds.");
+                Stopwatch ss = Stopwatch.StartNew();
+                emu.Continue(hz);
+                while (ss.ElapsedMilliseconds < i);
+                emu.Stop(true);
+                Console.WriteLine($"Elapsed time for {emu.CycleCount} cycles at {hz}Hz = {ss.ElapsedMilliseconds}ms\n");
+            }
+
+            Console.WriteLine("Done. Press enter to exit.");
+            Console.ReadLine();
+        }
+
+        /// <summary>
+        /// Runs tests from this repo: https://github.com/Klaus2m5/6502_65C02_functional_tests
+        /// </summary>
+        private static void RunKlausTests()
+        {
+            Emulation emu = new Emulation();
+            Cpu cpu = new Cpu();
+            emu.OnCycle += cpu.Cycle;
+
+            Ram ram = new Ram(0, 65536); // zero page and stack page
+            ram.Program(File.ReadAllBytes("C:\\Users\\garre\\Downloads\\6502_65C02_functional_tests-master\\6502_functional_test.bin"), 0x000a);
+            cpu.bc.OnCycle += ram.OnCycle;
+
+            cpu.pc = 0x400;
+            cpu.step = -1; // NEXT_OPCODE_STEP, cause a new opcode to be loaded on next cycle
+
+            // AUTOMATIC EXECUTION
+            //Console.WriteLine($"Cycles: {emu.CycleCount}; PC: {cpu.pc:X2}");
+            //emu.Continue(1_000_000);
+            //while (true)
+            //{
+            //    Thread.Sleep(1000);
+
+            //    emu.PauseState();
+            //    Console.WriteLine($"Cycles: {emu.CycleCount}; PC: {cpu.pc:X2}");
+            //    emu.ResumeState();
+            //}
+
+            // MANUAL EXECUTION
+            //Console.WriteLine($"Cycles: {emu.CycleCount}; PC: {cpu.pc:X2}");
+            //while (true)
+            //{
+            //    Console.ReadLine();
+
+            //    emu.Cycle(1_000_000);
+
+            //    Console.WriteLine($"Cycles: {emu.CycleCount}; PC: {cpu.pc:X2}");
+            //}
+
+            // SEMI AUTO
+            Console.WriteLine($"Cycles: {emu.CycleCount}; PC: {cpu.pc:X2}");
+            while (true)
+            {
+                emu.Cycle(1_000_000);
+
+                Console.WriteLine(cpu.ToString());
+                // Console.WriteLine($"Cycles: {emu.CycleCount}; PC: {cpu.pc:X2}");
+                
+                if (cpu.pc == 0x3699)
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(1000);
+                        Console.Beep();
+                        Console.WriteLine("SUCCESS!");
+                    }
+                }
+            }
         }
     }
 }

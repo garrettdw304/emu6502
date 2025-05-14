@@ -30,6 +30,12 @@
             }
         }
 
+        public void Program(byte[] data, ushort startAddr = 0)
+        {
+            for (int i = 0; i < data.Length; i++)
+                this.data[startAddr + i] = data[i];
+        }
+
         public override void OnCycle(IDeviceInterface bc)
         {
             if (!InRange(bc.Address))

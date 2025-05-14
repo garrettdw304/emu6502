@@ -4,6 +4,13 @@
     {
         private const byte N_MASK = 0b1000_0000;
         private const byte V_MASK = 0b0100_0000;
+        /// <summary>
+        /// Reserved. Always 1.
+        /// </summary>
+        private const byte R_MASK = 0b0010_0000;
+        /// <summary>
+        /// Break flag, 1 when PHP or BRK pushes the P reg, 0 when NMI or IRQ pushes the P flag.
+        /// </summary>
         private const byte B_MASK = 0b0001_0000;
         private const byte D_MASK = 0b0000_1000;
         private const byte I_MASK = 0b0000_0100;
@@ -59,7 +66,7 @@
         /// The opcode of the instruction currently being executed.
         /// See constants postfixed with _OPCODE.
         /// </summary>
-        private int opcode;
+        public int opcode;
         /// <summary>
         /// The step that we are at in processing the current instruction.
         /// <para/>See:
@@ -67,19 +74,19 @@
         /// <br/><see cref="WAI_STEP"/>
         /// <br/><see cref="STP_STEP"/>
         /// </summary>
-        private int step;
+        public int step;
         /// <summary>
         /// Used to store the zero page address byte that will be used in indirect addressing modes.
         /// </summary>
-        private byte indAddr;
+        public byte indAddr;
         /// <summary>
         /// Used to store absolute addresses or addresses loaded during indirect addressing modes.
         /// </summary>
-        private ushort effectiveAddress;
+        public ushort effectiveAddress;
         /// <summary>
         /// Temporary ALU input for operations on values that are not stored in the A register.
         /// </summary>
-        private byte aluTmp;
+        public byte aluTmp;
 
         private readonly Instruction[] instructions;
 
@@ -223,7 +230,7 @@
                 PLP_IMPL_28, AND_IMM_29, ROL_A_2A, None, BIT_ABS_2C, AND_ABS_2D, ROL_ABS_2E, BBR2_REL_2F,
                 BMI_REL_30, AND_INDY_31, AND_ZPGIND_32, None, BIT_ZPGX_34, AND_ZPGX_35, ROL_ZPGX_36, RMB3_ZPG_37,
                 SEC_IMPL_38, AND_ABSY_39, DEC_A_3A, None, BIT_ABSX_3C, AND_ABSX_3D, ROL_ABSX_3E, BBR3_REL_3F,
-                RTI_IMPL_40, EOR_XIND_41, None, None, None, None, LSR_ZPG_46, RMB4_ZPG_47,
+                RTI_IMPL_40, EOR_XIND_41, None, None, None, EOR_ZPG_45, LSR_ZPG_46, RMB4_ZPG_47,
                 PHA_IMPL_48, EOR_IMM_49, LSR_A_4A, None, JMP_ABS_4C, EOR_ABS_4D, LSR_ABS_4E, BBR4_REL_4F,
                 BVC_REL_50, EOR_INDY_51, EOR_ZPGIND_52, None, None, EOR_ZPGX_55, LSR_ZPGX_56, RMB5_ZPG_57,
                 CLI_IMPL_58, EOR_ABSY_59, PHY_IMPL_5A, None, None, EOR_ABSX_5D, LSR_ABSX_5E, BBR5_REL_5F,
@@ -253,6 +260,8 @@
 
         public void Cycle(int hz)
         {
+            bc.Hz = hz;
+
             if (rst.ShouldInterrupt)
             {
                 opcode = RST_OPCODE;
@@ -338,7 +347,7 @@
             // If both signs are the same...
             if (((a ^ b) & 0b1000_0000) == 0)
                 // See if the result sign has changed
-                V = (a ^ result & 0b1000_0000) != 0;
+                V = ((a ^ result) & 0b1000_0000) != 0;
             else
                 V = false;
         }
@@ -362,11 +371,12 @@
         /// </summary>
         private void SBC(byte value)
         {
-            int result = a - value - (C ? 0 : 1);
+            int borrow = (C ? 0 : 1);
+            int result = a - value - borrow;
 
-            C = result < 0;
+            C = result >= 0;
             SetNZ((byte)result);
-            SetV(a, value, (byte)result);
+            V = ((a ^ value) & (a ^ result) & 0b1000_0000) != 0;
 
             a = (byte)result;
         }
@@ -375,9 +385,8 @@
         {
             int result = reg - value;
 
-            C = result < 0;
+            C = reg >= value;
             SetNZ((byte)result);
-            SetV(reg, value, (byte)result);
         }
 
         private void BIT(byte value)
@@ -551,6 +560,7 @@
             return false;
         }
 
+        private bool brDec = false;
         private void BR(bool taken)
         {
             if (step == 0)
@@ -575,8 +585,11 @@
                     int result = PcL + (sbyte)effectiveAddress;
                     PcL = (byte)result;
 
-                    if (result > byte.MaxValue)
+                    if (result > byte.MaxValue || result < 0)
+                    {
                         step++;
+                        brDec = result < 0;
+                    }
                     else
                         step = NEXT_INSTR_STEP;
                 }
@@ -591,7 +604,10 @@
             else if (step == 3)
             {
                 _ = bc.ReadCycle(pc);
-                PcH++;
+                if (brDec)
+                    PcH--;
+                else
+                    PcH++;
 
                 step = NEXT_INSTR_STEP;
             }
@@ -924,8 +940,10 @@
                 return nameof(WAI_STEP);
             else if (step == STP_STEP)
                 return nameof(STP_STEP);
+            else if (step == PIPELINED_FETCH_STEP)
+                return nameof(PIPELINED_FETCH_STEP);
 
-            return step.ToString();
+                return step.ToString();
         }
 
         private delegate void Instruction();

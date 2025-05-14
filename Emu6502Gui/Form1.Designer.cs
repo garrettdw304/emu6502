@@ -50,9 +50,10 @@
             nmiBtn = new Button();
             groupBox4 = new GroupBox();
             label2 = new Label();
-            serialPortDropdown = new ComboBox();
+            uartDropdown = new ComboBox();
             label3 = new Label();
             graphicsBtn = new Button();
+            terminalBtn = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -260,20 +261,20 @@
             label2.TabIndex = 0;
             label2.Text = "DEVICE BASE  LENGTH\r\nRAM    $0000 $8000\r\nUART   $B000 $0002\r\nTIMER  $B100 $0004\r\nROM    $C000 $4000";
             // 
-            // serialPortDropdown
+            // uartDropdown
             // 
-            serialPortDropdown.FormattingEnabled = true;
-            serialPortDropdown.Location = new Point(268, 481);
-            serialPortDropdown.Name = "serialPortDropdown";
-            serialPortDropdown.Size = new Size(182, 33);
-            serialPortDropdown.TabIndex = 19;
-            serialPortDropdown.DropDown += serialPortDropdown_DropDown;
-            serialPortDropdown.SelectedIndexChanged += serialPortDropdown_SelectedIndexChanged;
+            uartDropdown.FormattingEnabled = true;
+            uartDropdown.Location = new Point(268, 481);
+            uartDropdown.Name = "uartDropdown";
+            uartDropdown.Size = new Size(182, 33);
+            uartDropdown.TabIndex = 19;
+            uartDropdown.DropDown += serialPortDropdown_DropDown;
+            uartDropdown.SelectedIndexChanged += uartDropdown_SelectedIndexChanged;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(456, 484);
+            label3.Location = new Point(268, 454);
             label3.Name = "label3";
             label3.Size = new Size(139, 25);
             label3.TabIndex = 20;
@@ -289,14 +290,25 @@
             graphicsBtn.UseVisualStyleBackColor = true;
             graphicsBtn.Click += graphicsBtn_Click;
             // 
+            // terminalBtn
+            // 
+            terminalBtn.Location = new Point(456, 480);
+            terminalBtn.Name = "terminalBtn";
+            terminalBtn.Size = new Size(112, 34);
+            terminalBtn.TabIndex = 22;
+            terminalBtn.Text = "Terminal";
+            terminalBtn.UseVisualStyleBackColor = true;
+            terminalBtn.Click += terminalBtn_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1012, 606);
+            Controls.Add(terminalBtn);
             Controls.Add(graphicsBtn);
             Controls.Add(label3);
-            Controls.Add(serialPortDropdown);
+            Controls.Add(uartDropdown);
             Controls.Add(groupBox4);
             Controls.Add(nmiBtn);
             Controls.Add(irqBtn);
@@ -350,8 +362,9 @@
         private Button nmiBtn;
         private GroupBox groupBox4;
         private Label label2;
-        private ComboBox serialPortDropdown;
+        private ComboBox uartDropdown;
         private Label label3;
         private Button graphicsBtn;
+        private Button terminalBtn;
     }
 }

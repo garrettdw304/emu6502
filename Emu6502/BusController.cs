@@ -44,6 +44,7 @@ namespace Emu6502
                 dataHiZ = false;
             }
         }
+        public int Hz { get; set; }
 
         /// <summary>
         /// Called on the rising edge of the clock, after the cpu has prepared
@@ -166,6 +167,7 @@ namespace Emu6502
         public bool Vbp { get; }
         public ushort Address { get; }
         public byte Data { get; set; }
+        public int Hz { get; }
 
         public event Action<IDeviceInterface>? OnCycle;
     }

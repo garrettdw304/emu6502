@@ -69,20 +69,20 @@ namespace Emu6502
             Task.Run(() =>
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                long accumulatedSWTicks = 0;
+                long accumulatedTicks = 0;
                 while (!exeCts.IsCancellationRequested)
                 {
                     // Wait for 1 cycle of time to pass.
                     if (sw.ElapsedTicks * hz / Stopwatch.Frequency < 1)
                         continue;
-                    accumulatedSWTicks += sw.ElapsedTicks;
+                    accumulatedTicks += sw.ElapsedTicks;
                     sw.Restart();
-                    while (accumulatedSWTicks >= Stopwatch.Frequency / hz)
+                    while (accumulatedTicks >= Stopwatch.Frequency / hz)
                     {
                         // Continue to wait and accumulate cycles until we have
                         // permission to modify state.
                         if (!stateAccessSem.Wait(0)) continue;
-                        accumulatedSWTicks -= Stopwatch.Frequency / hz;
+                        accumulatedTicks -= Stopwatch.Frequency / hz;
                         ExeCycle(hz);
                         stateAccessSem.Release();
                         if (--cycles <= 0)
@@ -101,28 +101,27 @@ namespace Emu6502
         {
             ExpectExePerms();
 
-            exeCts = new CancellationTokenSource();
+            exeCts = new CancellationTokenSource(); // TODO: I'm not even using this class correctly... (exeCts.Token!)
             Task.Run(() =>
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                long accumulatedSWTicks = 0;
+
                 long ticksPerCycle = Stopwatch.Frequency / hz;
+                long nextCycleTime = ticksPerCycle;
+                Console.WriteLine("Ticks per cycle: " + ticksPerCycle);
                 while (!exeCts.IsCancellationRequested)
                 {
-                    // Wait for at least 1 cycle of time to pass.
-                    if (sw.ElapsedTicks < ticksPerCycle)
+                    if (sw.ElapsedTicks < nextCycleTime)
                         continue;
-                    accumulatedSWTicks += sw.ElapsedTicks;
-                    sw.Restart();
-                    while (accumulatedSWTicks >= ticksPerCycle)
-                    {
-                        // Continue to wait and accumulate cycles until we have
-                        // permission to modify state.
-                        if (!stateAccessSem.Wait(0)) continue;
-                        accumulatedSWTicks -= ticksPerCycle;
-                        ExeCycle(hz);
-                        stateAccessSem.Release();
-                    }
+
+                    // Continue to wait and accumulate cycles until we have
+                    // permission to modify state.
+                    // Also don't wanna block incase Emu.Stop() is called
+                    // so that we can service that in a timely manner.
+                    if (!stateAccessSem.Wait(0)) continue;
+                    ExeCycle(hz);
+                    stateAccessSem.Release();
+                    nextCycleTime += ticksPerCycle;
                 }
 
                 ReleaseExePerms();
