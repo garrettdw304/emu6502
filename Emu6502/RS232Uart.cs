@@ -87,12 +87,12 @@
 
         public override void OnCycle(IDeviceInterface bc)
         {
+            HandleTransfers(bc.Hz);
+
             if (!InRange(bc.Address))
                 return;
 
             ushort reg = Relative(bc.Address);
-
-            HandleTransfers(bc.Hz);
 
             if (bc.Rwb)
             {

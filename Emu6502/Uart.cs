@@ -1,5 +1,7 @@
 ﻿using System.IO.Ports;
 
+// TODO: Combine RS232Uart and Uart into a single class and just make the RS232Interface into an interface so that you can plug in an RS232Interface or a SerialPort.
+//       Also be careful about not accessing the SerialPort's fields every cycle like Uart avoids. Either make it a special case or do that for everything or implement that part in the SerialPort->IRS232Interface adapter.
 namespace Emu6502
 {
     /// <summary>
