@@ -21,8 +21,17 @@ namespace Emu6502
         private const byte ACK = (byte)'A';
         private const byte NAK = (byte)'N';
 
+        private readonly static byte[] ILLEGAL_FILE_NAME_CHARS =
+        [
+            (byte)'/',
+            (byte)'\\',
+            (byte)':'
+        ];
+
         private readonly RS232Interface port = new RS232Interface();
         private readonly Dictionary<State, Action> stateHandlers;
+        private readonly uint storageSpace;
+        private readonly uint storageUsed;
 
         private State state = State.IDLE;
         private byte command = 0;
@@ -33,9 +42,15 @@ namespace Emu6502
         private StatusCode statusCode = StatusCode.OK;
         private int count = 0;
         public RS232Interface ExternalPort => port.pairedWith;
+        private string? drivePath;
 
-        public SerialDrive()
+        public SerialDrive(uint storageSpace, string? drivePath = null)
         {
+            SetDrivePath(drivePath);
+            this.storageSpace = storageSpace;
+            // TODO: Calc based on files in the drivePath. Add 16 bytes per file name, 4 bytes per file date, * bytes per file contents.
+            storageUsed = storageSpace;
+
             stateHandlers = new Dictionary<State, Action>()
             {
                 { State.IDLE, Idle },
@@ -55,8 +70,22 @@ namespace Emu6502
             stateHandlers[state]();
         }
 
+        public void SetDrivePath(string? drivePath)
+        {
+            if (state != State.IDLE)
+                throw new InvalidOperationException("Cannot change drive path when not in IDLE state.");
+
+            if (drivePath != null)
+                this.drivePath = Path.GetFullPath(drivePath);
+            else
+                this.drivePath = null;
+        }
+
         private void Idle()
         {
+            if (drivePath == null)
+                return;
+
             if (!port.Available())
                 return;
 
@@ -74,22 +103,27 @@ namespace Emu6502
             {
                 case READ_COMMAND:
                     command = input;
+                    fileName.Clear();
                     state = State.RECEIVING_FILE_NAME;
                     break;
                 case WRITE_COMMAND:
                     command = input;
+                    fileName.Clear();
                     state = State.RECEIVING_FILE_NAME;
                     break;
                 case APPEND_COMMAND:
                     command = input;
+                    fileName.Clear();
                     state = State.RECEIVING_FILE_NAME;
                     break;
                 case DELETE_COMMAND:
                     command = input;
+                    fileName.Clear();
                     state = State.RECEIVING_FILE_NAME;
                     break;
                 case INFO_COMMAND:
                     command = input;
+                    fileName.Clear();
                     state = State.RECEIVING_FILE_NAME;
                     break;
                 case LIST_COMMAND:
@@ -195,13 +229,19 @@ namespace Emu6502
             if (input != END_COMMAND)
                 return;
 
-            string name;
+            string? name;
             switch (command)
             {
                 case READ_COMMAND:
                     // Read file and store into data array
-                    name = fileName.ToString();
-                    if (!File.Exists(name))
+                    name = ValidateFileName(fileName.ToString());
+                    if (name == null)
+                    {
+                        port.Write(NAK);
+                        statusCode = StatusCode.FILE_NAME_INVALID;
+                        state = State.IDLE;
+                    }
+                    else if (!File.Exists(name))
                     {
                         port.Write(NAK);
                         statusCode = StatusCode.FILE_NOT_FOUND;
@@ -219,15 +259,31 @@ namespace Emu6502
                     }
                     break;
                 case WRITE_COMMAND:
-                    port.Write(ACK);
-                    statusCode = StatusCode.OK;
-                    count = 0;
-                    data = new byte[length];
-                    state = State.RECEIVING_DATA;
+                    name = ValidateFileName(fileName.ToString());
+                    if (name == null)
+                    {
+                        port.Write(NAK);
+                        statusCode = StatusCode.FILE_NAME_INVALID;
+                        state = State.IDLE;
+                    }
+                    else
+                    {
+                        port.Write(ACK);
+                        statusCode = StatusCode.OK;
+                        count = 0;
+                        data = new byte[length];
+                        state = State.RECEIVING_DATA;
+                    }
                     break;
                 case APPEND_COMMAND:
-                    name = fileName.ToString();
-                    if (!File.Exists(name))
+                    name = ValidateFileName(fileName.ToString());
+                    if (name == null)
+                    {
+                        port.Write(NAK);
+                        statusCode = StatusCode.FILE_NAME_INVALID;
+                        state = State.IDLE;
+                    }
+                    else if (!File.Exists(name))
                     {
                         port.Write(NAK);
                         statusCode = StatusCode.FILE_NOT_FOUND;
@@ -243,8 +299,13 @@ namespace Emu6502
                     }
                     break;
                 case DELETE_COMMAND:
-                    name = fileName.ToString();
-                    if (!File.Exists(name))
+                    name = ValidateFileName(fileName.ToString());
+                    if (name == null)
+                    {
+                        port.Write(NAK);
+                        statusCode = StatusCode.FILE_NAME_INVALID;
+                    }
+                    else if (!File.Exists(name))
                     {
                         port.Write(NAK);
                         statusCode = StatusCode.FILE_NOT_FOUND;
@@ -258,8 +319,14 @@ namespace Emu6502
                     state = State.IDLE;
                     break;
                 case INFO_COMMAND:
-                    name = fileName.ToString();
-                    if (!File.Exists(name))
+                    name = ValidateFileName(fileName.ToString());
+                    if (name == null)
+                    {
+                        port.Write(NAK);
+                        statusCode = StatusCode.FILE_NAME_INVALID;
+                        state = State.IDLE;
+                    }
+                    else if (!File.Exists(name))
                     {
                         port.Write(NAK);
                         statusCode = StatusCode.FILE_NOT_FOUND;
@@ -268,12 +335,24 @@ namespace Emu6502
                     else
                     {
                         count = 0;
-                        // TODO: Serialize info into data array and set length to length of data array
+                        length = 6;
+                        MemoryStream ms = new MemoryStream(length);
+                        ushort len = (ushort)new FileInfo(name).Length;
+                        ms.WriteByte((byte)len);
+                        ms.WriteByte((byte)(len >> 8));
+
+                        ulong date = (ulong)((DateTimeOffset)File.GetCreationTimeUtc(name)).ToUnixTimeSeconds();
+                        ms.WriteByte((byte)date);
+                        ms.WriteByte((byte)(date >> 8));
+                        ms.WriteByte((byte)(date >> 16));
+                        ms.WriteByte((byte)(date >> 24));
+
+                        data = ms.ToArray();
                         state = State.SENDING_DATA;
                     }
                     break;
                 case LIST_COMMAND:
-                    // TODO: Implement list command
+                    // TODO: Implement list
                     throw new NotImplementedException();
                 case STATUS_COMMAND:
                     // TODO: Serialize status into data array and set length to length of data array
@@ -338,6 +417,28 @@ namespace Emu6502
 
                     state = State.IDLE;
             }
+        }
+
+        private bool ValidateFileNameChar(byte value)
+        {
+            return !ILLEGAL_FILE_NAME_CHARS.Contains(value);
+        }
+
+        /// <summary>
+        /// Ensures the file is in the <see cref="drivePath"/>.
+        /// </summary>
+        private string? ValidateFileName(string fileName)
+        {
+            // TODO: Enhance security
+
+            if (drivePath == null)
+                throw new InvalidOperationException();
+
+            fileName = Path.Combine(drivePath, fileName);
+            if (Path.GetDirectoryName(Path.GetFullPath(fileName)) != drivePath || Path.GetFileName(fileName).Length > 15)
+                return null;
+            else
+                return fileName;
         }
 
         private enum State

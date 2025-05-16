@@ -11,20 +11,23 @@ namespace Emu6502Gui
         private const ushort RAM_BASE_ADDRESS = 0x0000;
         private const int RAM_SIZE = 0x8000;
         private const ushort UART_BASE_ADDRESS = 0xB000;
-        private const ushort TIMER_BASE_ADDRESS = 0xB100;
-        private const ushort GRAPHICS_CHIP_BASE_ADDRESS = 0xB200;
+        private const ushort DRIVE_BASE_ADDRESS = 0xB100;
+        private const ushort TIMER_BASE_ADDRESS = 0xB200;
+        private const ushort GRAPHICS_CHIP_BASE_ADDRESS = 0xB300;
 
         private readonly Emulation emu;
         private readonly Cpu cpu;
+        private readonly SerialDrive serialDrive;
 
         private readonly Ram ram;
         private Uart uart;
+        private RS232Uart driveUart;
         private readonly SimpleTimer timer;
-        private readonly PushButtonInterruptors pbi;
         private readonly GraphicsChip graphicsChip;
         private GraphicsChipOutput? graphicsChipForm;
         private readonly Bitmap graphicsChipBuffer;
         private readonly Rom rom;
+        private readonly PushButtonInterruptors pbi;
 
         private OpenTermDialog? termDialog;
 
@@ -37,18 +40,29 @@ namespace Emu6502Gui
         {
             InitializeComponent();
 
-            // Create emulation, cpu and connect them.
+            // Create emulation
             emu = new Emulation();
+
+            // Create emulated cpu
             cpu = new Cpu();
             emu.OnCycle += cpu.Cycle;
+
+            // Create other emulated machines
+            serialDrive = new SerialDrive(1_440_000);
+            emu.OnCycle += serialDrive.OnCycle;
+            const string path = "serialDrive/";
+            Directory.CreateDirectory(path);
+            serialDrive.SetDrivePath(path);
 
             // Create devices
             ram = new Ram(RAM_BASE_ADDRESS, RAM_SIZE);
             uart = new Uart(UART_BASE_ADDRESS);
+            driveUart = new RS232Uart(DRIVE_BASE_ADDRESS, serialDrive.ExternalPort);
             timer = new SimpleTimer(TIMER_BASE_ADDRESS, cpu.irq);
             graphicsChipBuffer = new Bitmap(320, 240);
             graphicsChip = new GraphicsChip(GRAPHICS_CHIP_BASE_ADDRESS, Graphics.FromImage(graphicsChipBuffer));
             rom = new Rom(ROM_BASE_ADDRESS, ROM_SIZE);
+            // Devices not in memory map
             pbi = new PushButtonInterruptors(cpu.irq, cpu.nmi, cpu.rst);
 
             // Connect devices
@@ -63,6 +77,8 @@ namespace Emu6502Gui
         private void Form1_Load(object sender, EventArgs e)
         {
             MouseWheel += Form1_MouseWheel;
+
+            outputLbl.Text = DateTime.Now.ToShortTimeString() + " Program Opened";
         }
 
         private void continueBtn_Click(object sender, EventArgs e)
@@ -348,6 +364,26 @@ namespace Emu6502Gui
             termDialog = new OpenTermDialog();
             termDialog.FormClosed += (o, e) => { termDialog = null; terminalBtn.Enabled = true; };
             termDialog.Show();
+        }
+
+        private void drivePathBtn_Click(object sender, EventArgs e)
+        {
+            DialogResult result = drivePathDialog.ShowDialog();
+            if (result != DialogResult.OK)
+                return;
+
+            if (!Directory.Exists(drivePathDialog.SelectedPath))
+                return;
+
+            try
+            {
+                serialDrive.SetDrivePath(drivePathDialog.SelectedPath);
+                outputLbl.Text = DateTime.Now.ToShortTimeString() + " Drive Path Set";
+            }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

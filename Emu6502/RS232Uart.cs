@@ -80,9 +80,9 @@
         /// </summary>
         private bool tdrEmpty = true;
 
-        public RS232Uart(ushort baseAddress) : base(baseAddress)
+        public RS232Uart(ushort baseAddress, RS232Interface? port = null) : base(baseAddress)
         {
-
+            this.port = port;
         }
 
         public override void OnCycle(IDeviceInterface bc)
