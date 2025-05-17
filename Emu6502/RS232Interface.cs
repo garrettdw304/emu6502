@@ -32,7 +32,7 @@
 
         public bool ClearToSend()
         {
-            return pairedWith.available;
+            return !pairedWith.available;
         }
 
         public byte Read()

@@ -67,6 +67,7 @@ namespace Emu6502Gui
 
             // Connect devices
             cpu.bc.OnCycle += uart.OnCycle;
+            cpu.bc.OnCycle += driveUart.OnCycle;
             cpu.bc.OnCycle += ram.OnCycle;
             cpu.bc.OnCycle += timer.OnCycle;
             cpu.bc.OnCycle += graphicsChip.OnCycle;
