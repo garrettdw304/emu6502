@@ -20,8 +20,8 @@ namespace Emu6502Gui
         private readonly SerialDrive serialDrive;
 
         private readonly Ram ram;
-        private Uart uart;
-        private RS232Uart driveUart;
+        private readonly Uart uart;
+        private readonly RS232Uart driveUart;
         private readonly SimpleTimer timer;
         private readonly GraphicsChip graphicsChip;
         private GraphicsChipOutput? graphicsChipForm;
