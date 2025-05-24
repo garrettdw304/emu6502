@@ -19,12 +19,17 @@ namespace Emu6502Gui
         /// </summary>
         private const int MODE_REGISTER = 0;
         /// <summary>
+        /// bit 0 - High to indicate that there is a byte for the cpu to read.
+        /// bit 1 - High to indicate that the cpu can write a byte.
+        /// </summary>
+        private const int STATUS_REG = 1;
+        /// <summary>
         /// bit 0 - High to enable auto incrementing of the cursor when accessing the text register.
         /// bit 1 - High to enable VT-100-like command handling.
         /// bit 2 - High to enable auto incrementing tile horizontal/vertical registers as tile texture reg is written.
         /// bit 3 - High to enable auto incrementing texture offset/index registers as texture color reg is written.
         /// </summary>
-        private const int CONTROL_REG = 1;
+        private const int CONTROL_REG = 2;
         /// <summary>
         /// Writes the character to the current cursor position.
         /// Optionally increments the current cursor position.
@@ -83,8 +88,8 @@ namespace Emu6502Gui
         private readonly Sprite[] sprites;
         private readonly Tile[,] tiles;
         private readonly Texture[] textures;
-        // TODO: Don't use nullable values
         private readonly Action<IDeviceInterface>[] regHandlers;
+        private readonly AnsiStateMachine terminal;
 
         public override int Length => regHandlers.Length;
 
@@ -119,6 +124,7 @@ namespace Emu6502Gui
         public GraphicsChip(ushort baseAddress, Graphics graphics) : base(baseAddress)
         {
             this.output = graphics;
+            terminal = new AnsiStateMachine(output, new Bitmap("font.png"));
 
             sprites = new Sprite[SPRITE_COUNT];
             for (int i = 0; i < sprites.Length; i++)
@@ -135,11 +141,13 @@ namespace Emu6502Gui
 
             regHandlers =
             [
-                ModeReg, ControlReg, (_) => { }, (_) => { },
+                ModeReg, StatusReg, ControlReg, (_) => { },
                 TextReg, SpriteIndexReg, SpriteXLoReg, SpriteXHiReg,
                 SpriteYReg, SpriteTextureReg, TileXReg, TileYReg,
                 TileTextureReg, TextureIndexReg, TextureOffsetReg, TextureColorReg
             ];
+
+            graphics.Clear(Color.Black);
         }
 
         public override void OnCycle(IDeviceInterface bc)
@@ -200,6 +208,22 @@ namespace Emu6502Gui
                 DrawSprite(sprites[i]);
         }
 
+        private void StatusReg(IDeviceInterface bc)
+        {
+            if (bc.Rwb)
+            {
+                byte status = 0;
+                if (terminal.ReadAvailable())
+                    status |= 0b01;
+                status |= 0b10; // OK for cpu to write to text reg
+                bc.Data = status;
+            }
+            else
+            {
+                // TODO: WHAT TO DO WHEN STATUS IS WRITTEN TO
+            }
+        }
+
         private void ControlReg(IDeviceInterface bc)
         {
             if (bc.Rwb)
@@ -210,7 +234,10 @@ namespace Emu6502Gui
 
         private void TextReg(IDeviceInterface bc)
         {
-
+            if (bc.Rwb)
+                bc.Data = terminal.Read();
+            else
+                terminal.Write(bc.Data);
         }
 
         private void SpriteIndexReg(IDeviceInterface bc)
