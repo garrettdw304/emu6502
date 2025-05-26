@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "WithArgs": {
+      "commandName": "Project",
+      "commandLineArgs": "-r D:\\CodeProjects\\emu6502\\os\\tmp\\a.out\r\n-u COM90\r\n-t COM91\r\n-c"
+    },
+    "NoArgs": {
+      "commandName": "Project"
+    }
+  }
+}

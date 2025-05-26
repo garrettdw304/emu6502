@@ -1,4 +1,5 @@
 using Emu6502;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Text;
 
@@ -14,6 +15,8 @@ namespace Emu6502Gui
         private const ushort DRIVE_BASE_ADDRESS = 0xB100;
         private const ushort TIMER_BASE_ADDRESS = 0xB200;
         private const ushort GRAPHICS_CHIP_BASE_ADDRESS = 0xB300;
+
+        private readonly CommandArguments arguments;
 
         private readonly Emulation emu;
         private readonly Cpu cpu;
@@ -48,11 +51,10 @@ namespace Emu6502Gui
             emu.OnCycle += cpu.Cycle;
 
             // Create other emulated machines
-            serialDrive = new SerialDrive(1_440_000);
-            emu.OnCycle += serialDrive.OnCycle;
             const string path = "serialDrive/";
             Directory.CreateDirectory(path);
-            serialDrive.SetDrivePath(path);
+            serialDrive = new SerialDrive(1_440_000, path);
+            emu.OnCycle += serialDrive.OnCycle;
 
             // Create devices
             ram = new Ram(RAM_BASE_ADDRESS, RAM_SIZE);
@@ -73,6 +75,25 @@ namespace Emu6502Gui
             cpu.bc.OnCycle += graphicsChip.OnCycle;
             cpu.bc.OnCycle += rom.OnCycle;
             cpu.bc.OnCycle += pbi.OnCycle;
+
+            arguments = new CommandArguments(Environment.CommandLine);
+            if (arguments.romFilePath != null)
+            {
+                if (!File.Exists(arguments.romFilePath))
+                    MessageBox.Show("ROM file does not exist.");
+                else
+                    rom.Program(arguments.romFilePath);
+            }
+            if (arguments.termPort != null) Process.Start($"plink.exe", $"-serial {arguments.termPort} -sercfg 9600,8,n,1,N");
+            if (arguments.uartPort != null)
+            {
+                uartDropdown.Items.AddRange(["None", arguments.uartPort]);
+                uartDropdown.SelectedIndex = 1;
+            }
+            if (arguments.serialDrivePath != null) serialDrive.SetDrivePath(arguments.serialDrivePath);
+            if (arguments.hz != null) clockRateTB.Text = arguments.hz.ToString();
+            if (arguments.openGraphics) graphicsBtn_Click(null, null);
+            if (arguments.autoContinue) continueBtn_Click(null, null);
         }
 
         private void Form1_Load(object sender, EventArgs e)

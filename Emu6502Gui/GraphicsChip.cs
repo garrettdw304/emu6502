@@ -86,7 +86,7 @@ namespace Emu6502Gui
 
         private readonly Graphics output;
         private readonly Sprite[] sprites;
-        private readonly Tile[,] tiles;
+        private readonly byte[,] tiles;
         private readonly Texture[] textures;
         private readonly Action<IDeviceInterface>[] regHandlers;
         private readonly AnsiStateMachine terminal;
@@ -130,10 +130,7 @@ namespace Emu6502Gui
             for (int i = 0; i < sprites.Length; i++)
                 sprites[i] = new Sprite();
 
-            tiles = new Tile[TILE_COLUMNS, TILE_ROWS];
-            for (int y = 0; y < TILE_ROWS; y++)
-                for (int x = 0; x < TILE_COLUMNS; x++)
-                    tiles[x, y] = new Tile();
+            tiles = new byte[TILE_COLUMNS, TILE_ROWS];
 
             textures = new Texture[TEXTURE_COUNT];
             for (int i = 0; i < textures.Length; i++)
@@ -192,7 +189,7 @@ namespace Emu6502Gui
 
         private void DrawTile(int tileX, int tileY)
         {
-            Texture texture = textures[tiles[tileX, tileY].textureIndex];
+            Texture texture = textures[tiles[tileX, tileY]];
             output.DrawImage(texture.bitmap, tileX * 8, tileY * 8);
         }
 
@@ -214,7 +211,7 @@ namespace Emu6502Gui
             {
                 byte status = 0;
                 if (terminal.ReadAvailable())
-                    status |= 0b01;
+                    status |= 0b01; // OK for cpu to read text reg
                 status |= 0b10; // OK for cpu to write to text reg
                 bc.Data = status;
             }
@@ -315,10 +312,10 @@ namespace Emu6502Gui
         private void TileTextureReg(IDeviceInterface bc)
         {
             if (bc.Rwb)
-                bc.Data = tiles[tileX, tileY].textureIndex;
+                bc.Data = tiles[tileX, tileY];
             else
             {
-                tiles[tileX, tileY].textureIndex = bc.Data;
+                tiles[tileX, tileY] = bc.Data;
                 DrawTile(tileX, tileY);
                 // TODO: Redraw sprites over the tile. Right now just drawing all sprites.
                 foreach (Sprite sprite in sprites)
