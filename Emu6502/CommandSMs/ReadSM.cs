@@ -6,8 +6,6 @@
         public override bool NeedsOffset => true;
         public override bool NeedsLength => true;
 
-        private ushort offset = 0;
-
         private byte[] data = [];
         private int count = 0;
 
@@ -32,18 +30,15 @@
                 port.Write(SerialDrive.ACK);
                 //statusCode = StatusCode.OK;
                 count = 0;
-                this.offset = offset;
 
                 // Read file data
                 data = File.ReadAllBytes(name);
                 // Get length of file.
-                length = Math.Min(length, (ushort)data.Length); // TODO: Take into account offset (also use offset elsewhere, we are reading offset but we are never using it)
+                length = Math.Min((ushort)(length - offset), (ushort)(data.Length - offset));
 
                 // Combine length and file data to be sent.
                 MemoryStream ms = new MemoryStream(length + 2);
-                ms.WriteByte((byte)length); ms.WriteByte((byte)(length >> 8)); ms.Write(data, 0, length);
-                // Set length to the length of all data to be sent.
-                // Set data to be sent.
+                ms.WriteByte((byte)length); ms.WriteByte((byte)(length >> 8)); ms.Write(data, offset, length);
                 data = ms.ToArray();
 
                 return false;
