@@ -22,6 +22,11 @@ namespace Emu6502
         public event Action<int>? OnCycle;
 
         /// <summary>
+        /// Called when the emulation stops. Does not get called when using Cycle.
+        /// </summary>
+        public event Action OnStop;
+
+        /// <summary>
         /// A single resource which gives a thread permission to execute cycles.
         /// </summary>
         private readonly SemaphoreSlim exeSem;
@@ -69,31 +74,29 @@ namespace Emu6502
             Task.Run(() =>
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                long accumulatedTicks = 0;
+
+                long ticksPerCycle = Stopwatch.Frequency / hz;
+                long nextCycleTime = ticksPerCycle;
+                Console.WriteLine("Ticks per cycle: " + ticksPerCycle);
                 while (!exeCts.IsCancellationRequested)
                 {
-                    // Wait for 1 cycle of time to pass.
-                    if (sw.ElapsedTicks * hz / Stopwatch.Frequency < 1)
+                    if (sw.ElapsedTicks < nextCycleTime)
                         continue;
-                    accumulatedTicks += sw.ElapsedTicks;
-                    sw.Restart();
-                    while (accumulatedTicks >= Stopwatch.Frequency / hz)
-                    {
-                        // Continue to wait and accumulate cycles until we have
-                        // permission to modify state.
-                        if (!stateAccessSem.Wait(0)) continue;
-                        accumulatedTicks -= Stopwatch.Frequency / hz;
-                        ExeCycle(hz);
-                        stateAccessSem.Release();
-                        if (--cycles <= 0)
-                        {
-                            exeCts.Cancel();
-                            break;
-                        }
-                    }
+
+                    // Continue to wait and accumulate cycles until we have
+                    // permission to modify state.
+                    // Also don't wanna block incase Emu.Stop() is called
+                    // so that we can service that in a timely manner.
+                    if (!stateAccessSem.Wait(0)) continue;
+                    ExeCycle(hz);
+                    stateAccessSem.Release();
+                    nextCycleTime += ticksPerCycle;
+                    if (--cycles <= 0)
+                        break;
                 }
 
                 ReleaseExePerms();
+                OnStop();
             });
         }
 
@@ -125,6 +128,41 @@ namespace Emu6502
                 }
 
                 ReleaseExePerms();
+                OnStop();
+            });
+        }
+
+        public void Continue(int hz, Func<bool> until)
+        {
+            ExpectExePerms();
+
+            exeCts = new CancellationTokenSource(); // TODO: I'm not even using this class correctly... (exeCts.Token!)
+            Task.Run(() =>
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+
+                long ticksPerCycle = Stopwatch.Frequency / hz;
+                long nextCycleTime = ticksPerCycle;
+                Console.WriteLine("Ticks per cycle: " + ticksPerCycle);
+                while (!exeCts.IsCancellationRequested)
+                {
+                    if (sw.ElapsedTicks < nextCycleTime)
+                        continue;
+
+                    // Continue to wait and accumulate cycles until we have
+                    // permission to modify state.
+                    // Also don't wanna block incase Emu.Stop() is called
+                    // so that we can service that in a timely manner.
+                    if (!stateAccessSem.Wait(0)) continue;
+                    ExeCycle(hz);
+                    stateAccessSem.Release();
+                    nextCycleTime += ticksPerCycle;
+                    if (until())
+                        break;
+                }
+
+                ReleaseExePerms();
+                OnStop();
             });
         }
 

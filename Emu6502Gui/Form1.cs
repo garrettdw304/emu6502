@@ -45,6 +45,7 @@ namespace Emu6502Gui
 
             // Create emulation
             emu = new Emulation();
+            emu.OnStop += Emu_OnStop;
 
             // Create emulated cpu
             cpu = new Cpu();
@@ -107,12 +108,9 @@ namespace Emu6502Gui
         {
             if (emu.IsRunning)
             {
+                continueBtn.Text = "Stopping";
+                continueBtn.Enabled = false;
                 emu.Stop(false);
-                continueBtn.Text = "Continue";
-                cycleBtn.Enabled = true;
-                clockRateTB.Enabled = true;
-                loadRomBtn.Enabled = true;
-                uartDropdown.Enabled = true;
             }
             else
             {
@@ -122,13 +120,41 @@ namespace Emu6502Gui
                     return;
                 }
 
-                emu.Continue(hz);
+                ushort stopAt = 0;
+                if (stopAtCB.Checked && !TryParseUShort(stopAtAddrTB.Text, out stopAt))
+                {
+                    stopAtAddrTB.Text = "";
+                    return;
+                }
+
                 continueBtn.Text = "Stop";
                 cycleBtn.Enabled = false;
                 clockRateTB.Enabled = false;
                 loadRomBtn.Enabled = false;
                 uartDropdown.Enabled = false;
+                stopAtCB.Enabled = false;
+                stopAtAddrTB.Enabled = false;
+
+                if (stopAtCB.Checked)
+                    emu.Continue(hz, () => cpu.pc == stopAt);
+                else
+                    emu.Continue(hz);
             }
+        }
+
+        private void Emu_OnStop()
+        {
+            Invoke(() =>
+            {
+                continueBtn.Text = "Continue";
+                continueBtn.Enabled = true;
+                cycleBtn.Enabled = true;
+                clockRateTB.Enabled = true;
+                loadRomBtn.Enabled = true;
+                uartDropdown.Enabled = true;
+                stopAtCB.Enabled = true;
+                stopAtAddrTB.Enabled = true;
+            });
         }
 
         private void cycleBtn_Click(object sender, EventArgs e)
@@ -269,7 +295,7 @@ namespace Emu6502Gui
             stackLbl.Text = sb.ToString();
         }
 
-        private bool TryParseUShort(string str, out ushort value)
+        private static bool TryParseUShort(string str, out ushort value)
         {
             try
             {
