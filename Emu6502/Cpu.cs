@@ -20,7 +20,7 @@
         /// <summary>
         /// Fetch the opcode for the next instruction during the next cycle.
         /// </summary>
-        private const int NEXT_INSTR_STEP = -1;
+        public const int NEXT_INSTR_STEP = -1;
         /// <summary>
         /// We are waiting for an interrupt to occur because of WAI.
         /// </summary>
@@ -35,7 +35,7 @@
         /// that the fetch cycle of the next instruction is to be skipped and that it has already loaded opcode with the
         /// opcode byte of the next instruction to be executed.
         /// </summary>
-        private const int PIPELINED_FETCH_STEP = -4;
+        public const int PIPELINED_FETCH_STEP = -4;
         private const int NMI_OPCODE = 256;
         private const int RST_OPCODE = 257;
         private const int IRQ_OPCODE = 258;
@@ -944,6 +944,11 @@
                 return nameof(PIPELINED_FETCH_STEP);
 
                 return step.ToString();
+        }
+
+        public string NameOfInstruction(byte opcode)
+        {
+            return instructions[opcode].Method.Name;
         }
 
         private delegate void Instruction();

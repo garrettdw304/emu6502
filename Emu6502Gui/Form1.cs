@@ -134,8 +134,13 @@ namespace Emu6502Gui
                 uartDropdown.Enabled = false;
                 stopAtCB.Enabled = false;
                 stopAtAddrTB.Enabled = false;
+                stepCB.Enabled = false;
 
-                if (stopAtCB.Checked)
+                if (stepCB.Checked && stopAtCB.Checked)
+                    emu.Continue(hz, () => cpu.step == Cpu.NEXT_INSTR_STEP || cpu.step == Cpu.PIPELINED_FETCH_STEP || cpu.pc == stopAt);
+                else if (stepCB.Checked)
+                    emu.Continue(hz, () => cpu.step == Cpu.NEXT_INSTR_STEP || cpu.step == Cpu.PIPELINED_FETCH_STEP);
+                else if (stopAtCB.Checked)
                     emu.Continue(hz, () => cpu.pc == stopAt);
                 else
                     emu.Continue(hz);
@@ -154,6 +159,7 @@ namespace Emu6502Gui
                 uartDropdown.Enabled = true;
                 stopAtCB.Enabled = true;
                 stopAtAddrTB.Enabled = true;
+                stepCB.Enabled = true;
             });
         }
 
@@ -187,7 +193,7 @@ namespace Emu6502Gui
         private void statusTimer_Tick(object sender, EventArgs e)
         {
             emu.PauseState();
-            cpuStatusLbl.Text = cpu.ToString() + "\nCycles: " + emu.CycleCount;
+            cpuStatusLbl.Text = cpu.ToString() + "\nNextInstr: " + cpu.NameOfInstruction((byte)PeekMem(cpu.pc)) + "\nCycles: " + emu.CycleCount;
             UpdateMemDisplay();
             UpdateStackDisplay();
             emu.ResumeState();

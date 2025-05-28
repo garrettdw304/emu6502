@@ -58,6 +58,7 @@
             drivePathDialog = new FolderBrowserDialog();
             stopAtCB = new CheckBox();
             stopAtAddrTB = new TextBox();
+            stepCB = new CheckBox();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -67,7 +68,7 @@
             // continueBtn
             // 
             continueBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            continueBtn.Location = new Point(888, 560);
+            continueBtn.Location = new Point(889, 561);
             continueBtn.Margin = new Padding(2);
             continueBtn.Name = "continueBtn";
             continueBtn.Size = new Size(112, 34);
@@ -79,7 +80,7 @@
             // cycleBtn
             // 
             cycleBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            cycleBtn.Location = new Point(888, 520);
+            cycleBtn.Location = new Point(889, 523);
             cycleBtn.Margin = new Padding(2);
             cycleBtn.Name = "cycleBtn";
             cycleBtn.Size = new Size(112, 34);
@@ -107,9 +108,9 @@
             cpuStatusLbl.Location = new Point(6, 28);
             cpuStatusLbl.Margin = new Padding(2, 0, 2, 0);
             cpuStatusLbl.Name = "cpuStatusLbl";
-            cpuStatusLbl.Size = new Size(75, 200);
+            cpuStatusLbl.Size = new Size(119, 220);
             cpuStatusLbl.TabIndex = 6;
-            cpuStatusLbl.Text = "A:\r\nX:\r\nY:\r\nS:\r\nP:\r\nP:\r\nPC:\r\nStep:\r\nInstr:\r\nCycle:";
+            cpuStatusLbl.Text = "A:\r\nX:\r\nY:\r\nS:\r\nP:\r\nP:\r\nPC:\r\nStep:\r\nInstr:\r\nNextInstr:\r\nCycle:";
             // 
             // outputLbl
             // 
@@ -125,7 +126,7 @@
             // clockRateTB
             // 
             clockRateTB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            clockRateTB.Location = new Point(888, 484);
+            clockRateTB.Location = new Point(889, 488);
             clockRateTB.Margin = new Padding(2);
             clockRateTB.Name = "clockRateTB";
             clockRateTB.Size = new Size(112, 31);
@@ -136,7 +137,7 @@
             // 
             label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Location = new Point(888, 454);
+            label1.Location = new Point(899, 461);
             label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
             label1.Size = new Size(33, 25);
@@ -232,7 +233,7 @@
             // rstBtn
             // 
             rstBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            rstBtn.Location = new Point(770, 560);
+            rstBtn.Location = new Point(654, 561);
             rstBtn.Margin = new Padding(2);
             rstBtn.Name = "rstBtn";
             rstBtn.Size = new Size(112, 34);
@@ -244,7 +245,7 @@
             // irqBtn
             // 
             irqBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            irqBtn.Location = new Point(770, 520);
+            irqBtn.Location = new Point(654, 523);
             irqBtn.Margin = new Padding(2);
             irqBtn.Name = "irqBtn";
             irqBtn.Size = new Size(112, 34);
@@ -256,7 +257,7 @@
             // nmiBtn
             // 
             nmiBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            nmiBtn.Location = new Point(770, 482);
+            nmiBtn.Location = new Point(654, 485);
             nmiBtn.Margin = new Padding(2);
             nmiBtn.Name = "nmiBtn";
             nmiBtn.Size = new Size(112, 34);
@@ -345,7 +346,7 @@
             // stopAtCB
             // 
             stopAtCB.AutoSize = true;
-            stopAtCB.Location = new Point(667, 484);
+            stopAtCB.Location = new Point(781, 528);
             stopAtCB.Name = "stopAtCB";
             stopAtCB.Size = new Size(98, 29);
             stopAtCB.TabIndex = 24;
@@ -354,19 +355,30 @@
             // 
             // stopAtAddrTB
             // 
-            stopAtAddrTB.Location = new Point(667, 522);
+            stopAtAddrTB.Location = new Point(771, 563);
             stopAtAddrTB.Name = "stopAtAddrTB";
-            stopAtAddrTB.Size = new Size(98, 31);
+            stopAtAddrTB.Size = new Size(113, 31);
             stopAtAddrTB.TabIndex = 25;
             stopAtAddrTB.Text = "0xFFFF";
+            // 
+            // stepCB
+            // 
+            stepCB.AutoSize = true;
+            stepCB.Location = new Point(781, 493);
+            stepCB.Name = "stepCB";
+            stepCB.Size = new Size(73, 29);
+            stepCB.TabIndex = 26;
+            stepCB.Text = "Step";
+            stepCB.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1012, 606);
-            Controls.Add(stopAtAddrTB);
+            Controls.Add(stepCB);
             Controls.Add(stopAtCB);
+            Controls.Add(stopAtAddrTB);
             Controls.Add(drivePathBtn);
             Controls.Add(terminalBtn);
             Controls.Add(graphicsBtn);
@@ -434,5 +446,6 @@
         private FolderBrowserDialog drivePathDialog;
         private CheckBox stopAtCB;
         private TextBox stopAtAddrTB;
+        private CheckBox stepCB;
     }
 }
