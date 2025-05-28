@@ -24,7 +24,7 @@ namespace Emu6502Gui
 
         private readonly Ram ram;
         private readonly Uart uart;
-        private readonly RS232Uart driveUart;
+        private readonly Uart driveUart;
         private readonly SimpleTimer timer;
         private readonly GraphicsChip graphicsChip;
         private GraphicsChipOutput? graphicsChipForm;
@@ -60,7 +60,7 @@ namespace Emu6502Gui
             // Create devices
             ram = new Ram(RAM_BASE_ADDRESS, RAM_SIZE);
             uart = new Uart(UART_BASE_ADDRESS);
-            driveUart = new RS232Uart(DRIVE_BASE_ADDRESS, serialDrive.ExternalPort);
+            driveUart = new Uart(DRIVE_BASE_ADDRESS, serialDrive.ExternalPort);
             timer = new SimpleTimer(TIMER_BASE_ADDRESS, cpu.irq);
             graphicsChipBuffer = new Bitmap(320, 240);
             graphicsChip = new GraphicsChip(GRAPHICS_CHIP_BASE_ADDRESS, Graphics.FromImage(graphicsChipBuffer));
@@ -93,8 +93,8 @@ namespace Emu6502Gui
             }
             if (arguments.serialDrivePath != null) serialDrive.SetDrivePath(arguments.serialDrivePath);
             if (arguments.hz != null) clockRateTB.Text = arguments.hz.ToString();
-            if (arguments.openGraphics) graphicsBtn_Click(null, null);
-            if (arguments.autoContinue) continueBtn_Click(null, null);
+            if (arguments.openGraphics) GraphicsBtn_Click(null, null);
+            if (arguments.autoContinue) ContinueBtn_Click(null, null);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -104,7 +104,7 @@ namespace Emu6502Gui
             outputLbl.Text = DateTime.Now.ToShortTimeString() + " Program Opened";
         }
 
-        private void continueBtn_Click(object sender, EventArgs e)
+        private void ContinueBtn_Click(object sender, EventArgs e)
         {
             if (emu.IsRunning)
             {
@@ -163,7 +163,7 @@ namespace Emu6502Gui
             });
         }
 
-        private void cycleBtn_Click(object sender, EventArgs e)
+        private void CycleBtn_Click(object sender, EventArgs e)
         {
             if (emu.IsRunning)
                 return;
@@ -177,7 +177,7 @@ namespace Emu6502Gui
             emu.Cycle(hz);
         }
 
-        private void loadRomBtn_Click(object sender, EventArgs e)
+        private void LoadRomBtn_Click(object sender, EventArgs e)
         {
             DialogResult result = romFileDialog.ShowDialog();
             if (result != DialogResult.OK)
@@ -190,7 +190,7 @@ namespace Emu6502Gui
             outputLbl.Text = DateTime.Now.ToShortTimeString() + " ROM programmed";
         }
 
-        private void statusTimer_Tick(object sender, EventArgs e)
+        private void StatusTimer_Tick(object sender, EventArgs e)
         {
             emu.PauseState();
             cpuStatusLbl.Text = cpu.ToString() + "\nNextInstr: " + cpu.NameOfInstruction((byte)PeekMem(cpu.pc)) + "\nCycles: " + emu.CycleCount;
@@ -215,7 +215,7 @@ namespace Emu6502Gui
             }
         }
 
-        private void scrollToBtn_Click(object sender, EventArgs e)
+        private void ScrollToBtn_Click(object sender, EventArgs e)
         {
             if (!TryParseUShort(scrollToTB.Text, out ushort value))
                 scrollToTB.Text = "0x0000";
@@ -339,31 +339,32 @@ namespace Emu6502Gui
             return -1;
         }
 
-        private void nmiBtn_Click(object sender, EventArgs e)
+        private void NmiBtn_Click(object sender, EventArgs e)
         {
             pbi.TriggerNMI();
         }
 
-        private void irqBtn_Click(object sender, EventArgs e)
+        private void IrqBtn_Click(object sender, EventArgs e)
         {
             pbi.TriggerIRQ();
         }
 
-        private void rstBtn_Click(object sender, EventArgs e)
+        private void RstBtn_Click(object sender, EventArgs e)
         {
             pbi.TriggerRST();
         }
 
-        private void uartDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        private void UartDropdown_SelectedIndexChanged(object sender, EventArgs e)
         {
             object? selected = uartDropdown.SelectedItem;
 
-            if (uart.PortName != null)
+            if (uart.Port != null)
             {
-                if (selected != null && uart.PortName == (string)selected)
+                if (selected != null && ((RS232SerialPort)uart.Port).port.PortName == (string)selected)
                     return;
 
-                uart.SetPort(null);
+                ((RS232SerialPort)uart.Port).port.Dispose();
+                uart.Port = null;
             }
 
             if (selected == null || uartDropdown.SelectedIndex == 0)
@@ -372,7 +373,9 @@ namespace Emu6502Gui
             string portName = (string)selected;
             try
             {
-                uart.SetPort(portName);
+                SerialPort port = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
+                port.Open();
+                uart.Port = new RS232SerialPort(port);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -381,9 +384,9 @@ namespace Emu6502Gui
             }
         }
 
-        private void serialPortDropdown_DropDown(object sender, EventArgs e)
+        private void SerialPortDropdown_DropDown(object sender, EventArgs e)
         {
-            string? oldName = uart.PortName;
+            string? oldName = uart.Port == null ? null : ((RS232SerialPort)uart.Port).port.PortName;
 
             uartDropdown.Items.Clear();
             uartDropdown.Items.Add("None");
@@ -398,7 +401,7 @@ namespace Emu6502Gui
             }
         }
 
-        private void graphicsBtn_Click(object sender, EventArgs e)
+        private void GraphicsBtn_Click(object sender, EventArgs e)
         {
             graphicsBtn.Enabled = false;
             graphicsChipForm = new GraphicsChipOutput(graphicsChipBuffer);
@@ -406,7 +409,7 @@ namespace Emu6502Gui
             graphicsChipForm.Show();
         }
 
-        private void terminalBtn_Click(object sender, EventArgs e)
+        private void TerminalBtn_Click(object sender, EventArgs e)
         {
             if (termDialog != null)
             {
@@ -420,7 +423,7 @@ namespace Emu6502Gui
             termDialog.Show();
         }
 
-        private void drivePathBtn_Click(object sender, EventArgs e)
+        private void DrivePathBtn_Click(object sender, EventArgs e)
         {
             DialogResult result = drivePathDialog.ShowDialog();
             if (result != DialogResult.OK)

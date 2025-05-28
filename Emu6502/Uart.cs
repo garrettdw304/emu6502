@@ -1,13 +1,6 @@
-﻿using System.IO.Ports;
-
-// TODO: Combine RS232Uart and Uart into a single class and just make the RS232Interface into an interface so that you can plug in an RS232Interface or a SerialPort.
-//       Also be careful about not accessing the SerialPort's fields every cycle like Uart avoids. Either make it a special case or do that for everything or implement that part in the SerialPort->IRS232Interface adapter.
-namespace Emu6502
+﻿namespace Emu6502
 {
-    /// <summary>
-    /// A UART device that communicates with a SerialPort.
-    /// </summary>
-    public class Uart : Device, IDisposable
+    public class Uart : Device
     {
         // Status Bits
         private const byte RDR_FULL_MASK = 0b0000_0001;
@@ -20,7 +13,7 @@ namespace Emu6502
         private const int TX_BAUD_RATE = 9600;
         private const int RX_BAUD_RATE = 9600;
         /// <summary>
-        /// Transmit time based on 1 start bit, 8 bit word, 1 stop bit, no parity and <see cref="TX_BAUD_RATE"/>.
+        /// Transmit time based on 1 start bit, 1 stop bit, 8 bit word, no parity and <see cref="TX_BAUD_RATE"/>.
         /// </summary>
         private const float TRANSMIT_TIME = 1f / (((float)TX_BAUD_RATE) / (1 + 8 + 1 + 0));
         /// <summary>
@@ -28,24 +21,21 @@ namespace Emu6502
         /// </summary>
         private const float RECEIVE_TIME = 1f / (((float)RX_BAUD_RATE) / (1 + 8 + 1 + 0));
 
-        public override int Length => 2;
+        private static readonly IRS232Interface EMPTY_PORT = new Empty();
 
-        public string? PortName => port?.PortName;
-
-        private byte Status
+        private IRS232Interface port;
+        public IRS232Interface? Port
         {
             get
             {
-                byte toReturn = 0;
-                if (rdrFull)
-                    toReturn |= RDR_FULL_MASK;
-                if (tdrEmpty)
-                    toReturn |= TDR_EMPTY_MASK;
-                return toReturn;
+                return port == EMPTY_PORT ? null : port;
+            }
+
+            set
+            {
+                port = value ?? EMPTY_PORT;
             }
         }
-
-        private SerialPort? port;
 
         /// <summary>
         /// Receive Data Register
@@ -89,18 +79,24 @@ namespace Emu6502
         /// </summary>
         private bool tdrEmpty = true;
 
-        /// <summary>
-        /// Should be used when changing byteAvailableInPort.
-        /// </summary>
-        private object byteAvailableInPortLock = new object();
-        /// <summary>
-        /// Does not guarantee a byte in the port. Just a way to keep from checking for a byte every cycle, which slows the emulation very noticeably.
-        /// </summary>
-        private bool byteAvailableInPort = false;
+        public override int Length => 2;
 
-        public Uart(ushort baseAddress) : base(baseAddress)
+        private byte Status
         {
+            get
+            {
+                byte toReturn = 0;
+                if (rdrFull)
+                    toReturn |= RDR_FULL_MASK;
+                if (tdrEmpty)
+                    toReturn |= TDR_EMPTY_MASK;
+                return toReturn;
+            }
+        }
 
+        public Uart(ushort baseAddress, IRS232Interface? port = null) : base(baseAddress)
+        {
+            this.port = port ?? EMPTY_PORT;
         }
 
         public override void OnCycle(IDeviceInterface bc)
@@ -142,16 +138,6 @@ namespace Emu6502
             }
         }
 
-        public void Dispose()
-        {
-            if (port != null)
-            {
-                port.Close();
-                port.Dispose();
-                port = null;
-            }
-        }
-
         private void HandleTransfers(int hz)
         {
             if (transmitting)
@@ -160,7 +146,7 @@ namespace Emu6502
 
                 if (transmitInSeconds <= 0)
                 {
-                    port?.Write([tsr], 0, 1);
+                    port.Write(tsr);
 
                     if (!tdrEmpty)
                     {
@@ -182,64 +168,29 @@ namespace Emu6502
                     rdr = rsr;
                     rdrFull = true;
 
-                    if (port != null && port.BytesToRead > 0)
+                    if (port.Available())
                     {
-                        int data = port.ReadByte();
-                        if (data == -1)
-                            throw new Exception("End of stream.");
-                        rsr = (byte)data;
+                        rsr = port.Read();
                         receiveInSeconds = RECEIVE_TIME;
                     }
                     else
                         receiving = false;
                 }
             }
-            else if (byteAvailableInPort)
+            else if (port.Available())
             {
-                if (port != null && port.BytesToRead > 0)
-                {
-                    int data = port.ReadByte();
-                    if (data == -1)
-                        throw new Exception("End of stream.");
-                    rsr = (byte)data;
-                    receiveInSeconds = RECEIVE_TIME;
-                    receiving = true;
-                }
-
-                lock (byteAvailableInPortLock)
-                {
-                    if (port == null || port.BytesToRead == 0)
-                        byteAvailableInPort = false;
-                }
+                rsr = port.Read();
+                receiveInSeconds = RECEIVE_TIME;
+                receiving = true;
             }
         }
 
-        /// <param name="portName">If null, sets it to no port.</param>
-        public void SetPort(string? portName)
+        private class Empty : IRS232Interface
         {
-            if (port != null)
-            {
-                port.Close();
-                port.Dispose();
-                port = null;
-            }
-
-            if (portName == null)
-                return;
-
-            // TODO: If we fail somewhere around here we should set port to null and make sure it is disposed.
-
-            port = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
-            port.ReadTimeout = 1;
-            port.WriteTimeout = 1;
-            port.DataReceived += Port_DataReceived;
-            port.Open();
-        }
-
-        private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            lock (byteAvailableInPortLock)
-                byteAvailableInPort = true;
+            public bool Available() => false;
+            public bool ClearToSend() => false;
+            public byte Read() => 0;
+            public void Write(byte value) { }
         }
     }
 }

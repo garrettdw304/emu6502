@@ -75,7 +75,7 @@
             continueBtn.TabIndex = 0;
             continueBtn.Text = "Continue";
             continueBtn.UseVisualStyleBackColor = true;
-            continueBtn.Click += continueBtn_Click;
+            continueBtn.Click += ContinueBtn_Click;
             // 
             // cycleBtn
             // 
@@ -87,7 +87,7 @@
             cycleBtn.TabIndex = 1;
             cycleBtn.Text = "Cycle";
             cycleBtn.UseVisualStyleBackColor = true;
-            cycleBtn.Click += cycleBtn_Click;
+            cycleBtn.Click += CycleBtn_Click;
             // 
             // loadRomBtn
             // 
@@ -99,7 +99,7 @@
             loadRomBtn.TabIndex = 2;
             loadRomBtn.Text = "Load ROM";
             loadRomBtn.UseVisualStyleBackColor = true;
-            loadRomBtn.Click += loadRomBtn_Click;
+            loadRomBtn.Click += LoadRomBtn_Click;
             // 
             // cpuStatusLbl
             // 
@@ -147,7 +147,7 @@
             // statusTimer
             // 
             statusTimer.Enabled = true;
-            statusTimer.Tick += statusTimer_Tick;
+            statusTimer.Tick += StatusTimer_Tick;
             // 
             // memDisplay
             // 
@@ -206,7 +206,7 @@
             scrollToBtn.TabIndex = 13;
             scrollToBtn.Text = "Scroll To";
             scrollToBtn.UseVisualStyleBackColor = true;
-            scrollToBtn.Click += scrollToBtn_Click;
+            scrollToBtn.Click += ScrollToBtn_Click;
             // 
             // stackLbl
             // 
@@ -240,7 +240,7 @@
             rstBtn.TabIndex = 15;
             rstBtn.Text = "RST";
             rstBtn.UseVisualStyleBackColor = true;
-            rstBtn.Click += rstBtn_Click;
+            rstBtn.Click += RstBtn_Click;
             // 
             // irqBtn
             // 
@@ -252,7 +252,7 @@
             irqBtn.TabIndex = 16;
             irqBtn.Text = "IRQ";
             irqBtn.UseVisualStyleBackColor = true;
-            irqBtn.Click += irqBtn_Click;
+            irqBtn.Click += IrqBtn_Click;
             // 
             // nmiBtn
             // 
@@ -264,7 +264,7 @@
             nmiBtn.TabIndex = 17;
             nmiBtn.Text = "NMI";
             nmiBtn.UseVisualStyleBackColor = true;
-            nmiBtn.Click += nmiBtn_Click;
+            nmiBtn.Click += NmiBtn_Click;
             // 
             // groupBox4
             // 
@@ -297,8 +297,8 @@
             uartDropdown.Name = "uartDropdown";
             uartDropdown.Size = new Size(182, 33);
             uartDropdown.TabIndex = 19;
-            uartDropdown.DropDown += serialPortDropdown_DropDown;
-            uartDropdown.SelectedIndexChanged += uartDropdown_SelectedIndexChanged;
+            uartDropdown.DropDown += SerialPortDropdown_DropDown;
+            uartDropdown.SelectedIndexChanged += UartDropdown_SelectedIndexChanged;
             // 
             // label3
             // 
@@ -319,7 +319,7 @@
             graphicsBtn.TabIndex = 21;
             graphicsBtn.Text = "Graphics";
             graphicsBtn.UseVisualStyleBackColor = true;
-            graphicsBtn.Click += graphicsBtn_Click;
+            graphicsBtn.Click += GraphicsBtn_Click;
             // 
             // terminalBtn
             // 
@@ -330,7 +330,7 @@
             terminalBtn.TabIndex = 22;
             terminalBtn.Text = "Terminal";
             terminalBtn.UseVisualStyleBackColor = true;
-            terminalBtn.Click += terminalBtn_Click;
+            terminalBtn.Click += TerminalBtn_Click;
             // 
             // drivePathBtn
             // 
@@ -341,7 +341,7 @@
             drivePathBtn.TabIndex = 23;
             drivePathBtn.Text = "Drive Path";
             drivePathBtn.UseVisualStyleBackColor = true;
-            drivePathBtn.Click += drivePathBtn_Click;
+            drivePathBtn.Click += DrivePathBtn_Click;
             // 
             // stopAtCB
             // 
