@@ -2,7 +2,7 @@
 
 namespace Emu6502
 {
-    internal class ListSM(SerialDrive drive, RS232Interface port) : CommandStateMachine(drive, port)
+    internal class ListSM(SerialDrive drive, SerialInterface port) : CommandStateMachine(drive, port)
     {
         public override bool NeedsFileName => false;
         public override bool NeedsOffset => true;

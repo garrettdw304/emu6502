@@ -21,10 +21,10 @@
         /// </summary>
         private const float RECEIVE_TIME = 1f / (((float)RX_BAUD_RATE) / (1 + 8 + 1 + 0));
 
-        private static readonly IRS232Interface EMPTY_PORT = new Empty();
+        private static readonly ISerialInterface EMPTY_PORT = new Empty();
 
-        private IRS232Interface port;
-        public IRS232Interface? Port
+        private ISerialInterface port;
+        public ISerialInterface? Port
         {
             get
             {
@@ -94,7 +94,7 @@
             }
         }
 
-        public Uart(ushort baseAddress, IRS232Interface? port = null) : base(baseAddress)
+        public Uart(ushort baseAddress, ISerialInterface? port = null) : base(baseAddress)
         {
             this.port = port ?? EMPTY_PORT;
         }
@@ -185,7 +185,7 @@
             }
         }
 
-        private class Empty : IRS232Interface
+        private class Empty : ISerialInterface
         {
             public bool Available() => false;
             public bool ClearToSend() => false;

@@ -1,6 +1,6 @@
 ﻿namespace Emu6502
 {
-    internal class DeleteSM(SerialDrive drive, RS232Interface port) : CommandStateMachine(drive, port)
+    internal class DeleteSM(SerialDrive drive, SerialInterface port) : CommandStateMachine(drive, port)
     {
         public override bool NeedsFileName => true;
         public override bool NeedsOffset => false;

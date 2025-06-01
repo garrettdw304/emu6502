@@ -1,26 +1,26 @@
 ﻿namespace Emu6502
 {
-    public class RS232Interface : IRS232Interface
+    public class SerialInterface : ISerialInterface
     {
-        public readonly RS232Interface pairedWith;
+        public readonly SerialInterface pairedWith;
         private readonly object lck = new object();
 
         private bool available = false;
         private byte data = 0;
         
-        public RS232Interface()
+        public SerialInterface()
         {
-            pairedWith = new RS232Interface(this);
+            pairedWith = new SerialInterface(this);
         }
 
-        private RS232Interface(RS232Interface pairedWith)
+        private SerialInterface(SerialInterface pairedWith)
         {
             this.pairedWith = pairedWith;
         }
 
-        public static (RS232Interface, RS232Interface) CreatePair()
+        public static (SerialInterface, SerialInterface) CreatePair()
         {
-            RS232Interface portA = new RS232Interface();
+            SerialInterface portA = new SerialInterface();
 
             return (portA, portA.pairedWith);
         }

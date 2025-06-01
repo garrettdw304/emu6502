@@ -365,10 +365,10 @@ namespace Emu6502Gui
 
             if (uart.Port != null)
             {
-                if (selected != null && ((RS232SerialPort)uart.Port).port.PortName == (string)selected)
+                if (selected != null && ((SerialPortInterface)uart.Port).port.PortName == (string)selected)
                     return;
 
-                ((RS232SerialPort)uart.Port).port.Dispose();
+                ((SerialPortInterface)uart.Port).port.Dispose();
                 uart.Port = null;
             }
 
@@ -380,7 +380,7 @@ namespace Emu6502Gui
             {
                 SerialPort port = new SerialPort(portName, 9600, Parity.None, 8, StopBits.One);
                 port.Open();
-                uart.Port = new RS232SerialPort(port);
+                uart.Port = new SerialPortInterface(port);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -391,7 +391,7 @@ namespace Emu6502Gui
 
         private void SerialPortDropdown_DropDown(object sender, EventArgs e)
         {
-            string? oldName = uart.Port == null ? null : ((RS232SerialPort)uart.Port).port.PortName;
+            string? oldName = uart.Port == null ? null : ((SerialPortInterface)uart.Port).port.PortName;
 
             uartDropdown.Items.Clear();
             uartDropdown.Items.Add("None");

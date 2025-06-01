@@ -21,7 +21,7 @@ namespace Emu6502
         public const byte ACK = (byte)'A';
         public const byte NAK = (byte)'N';
 
-        private readonly RS232Interface port = new RS232Interface();
+        private readonly SerialInterface port = new SerialInterface();
         private readonly Dictionary<State, Action> stateHandlers;
         private readonly Dictionary<int, CommandStateMachine> commandStateMachines;
         private readonly uint storageSpace;
@@ -36,7 +36,7 @@ namespace Emu6502
         private int count = 0;
         public string? DrivePath { get; private set; }
 
-        public RS232Interface ExternalPort => port.pairedWith;
+        public SerialInterface ExternalPort => port.pairedWith;
 
         public SerialDrive(uint storageSpace, string? drivePath = null)
         {

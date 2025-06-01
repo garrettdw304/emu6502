@@ -2,7 +2,7 @@
 
 namespace Emu6502
 {
-    public interface IRS232Interface
+    public interface ISerialInterface
     {
         bool Available();
         bool ClearToSend();

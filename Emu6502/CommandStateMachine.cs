@@ -7,9 +7,9 @@
         public abstract bool NeedsLength { get; }
 
         protected readonly SerialDrive drive;
-        protected readonly RS232Interface port;
+        protected readonly SerialInterface port;
 
-        public CommandStateMachine(SerialDrive drive, RS232Interface port)
+        public CommandStateMachine(SerialDrive drive, SerialInterface port)
         {
             this.drive = drive;
             this.port = port;

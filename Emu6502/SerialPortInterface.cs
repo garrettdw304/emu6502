@@ -2,7 +2,7 @@
 
 namespace Emu6502
 {
-    public class RS232SerialPort : IRS232Interface
+    public class SerialPortInterface : ISerialInterface
     {
         public readonly SerialPort port;
         private readonly object lck = new object();
@@ -10,7 +10,7 @@ namespace Emu6502
         private bool available = false;
         private byte data = 0;
 
-        public RS232SerialPort(SerialPort port)
+        public SerialPortInterface(SerialPort port)
         {
             this.port = port;
             port.DataReceived += DataReceived;

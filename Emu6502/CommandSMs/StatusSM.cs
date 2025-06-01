@@ -1,6 +1,6 @@
 ﻿namespace Emu6502
 {
-    internal class StatusSM(SerialDrive drive, RS232Interface port) : CommandStateMachine(drive, port)
+    internal class StatusSM(SerialDrive drive, SerialInterface port) : CommandStateMachine(drive, port)
     {
         public override bool NeedsFileName => throw new NotImplementedException();
         public override bool NeedsOffset => throw new NotImplementedException();
