@@ -34,7 +34,7 @@
                 // Read file data
                 data = File.ReadAllBytes(name);
                 // Get length of file.
-                length = Math.Min(length, (ushort)data.Length);
+                length = Math.Min(length, (ushort)(data.Length - offset));
 
                 // Combine length and file data to be sent.
                 MemoryStream ms = new MemoryStream(length + 2);
