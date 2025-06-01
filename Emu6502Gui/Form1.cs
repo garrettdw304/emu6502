@@ -193,7 +193,12 @@ namespace Emu6502Gui
         private void StatusTimer_Tick(object sender, EventArgs e)
         {
             emu.PauseState();
-            cpuStatusLbl.Text = cpu.ToString() + "\nNextInstr: " + cpu.NameOfInstruction((byte)PeekMem(cpu.pc)) + "\nCycles: " + emu.CycleCount;
+            cpuStatusLbl.Text = cpu.ToString()
+                + "\nNextInstr: " + cpu.NameOfInstruction((byte)PeekMem(cpu.pc))
+                + "\nCycles: " + emu.CycleCount
+                + "\nIRQ Line: " + (cpu.irq.Triggered ? "HIGH" : "LOW")
+                + "\nNMI Line: " + (cpu.nmi.Triggered ? "HIGH" : "LOW")
+                + "\nRST Line: " + (cpu.rst.Triggered ? "HIGH" : "LOW");
             UpdateMemDisplay();
             UpdateStackDisplay();
             emu.ResumeState();
@@ -279,11 +284,11 @@ namespace Emu6502Gui
                     sb.AppendLine(PeekMem(0x100 | i).ToString().PadLeft(3, '0'));
 
                 // Print the line that sp points to
-                sb.AppendLine($"{PeekMem(0x100 | i++).ToString().PadLeft(3, '0')} <- SP");
+                sb.AppendLine($"{PeekMem(0x100 | i++).ToString().PadLeft(3, '0')} <- SP:{cpu.s.ToString("X2")}");
             }
             else
             {
-                sb.AppendLine($"{PeekMem(0x100 | cpu.s).ToString().PadLeft(3, '0')} <- SP");
+                sb.AppendLine($"{PeekMem(0x100 | cpu.s).ToString().PadLeft(3, '0')} <- SP:00");
                 i++;
             }
 

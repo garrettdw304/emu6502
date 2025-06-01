@@ -108,9 +108,9 @@
             cpuStatusLbl.Location = new Point(6, 28);
             cpuStatusLbl.Margin = new Padding(2, 0, 2, 0);
             cpuStatusLbl.Name = "cpuStatusLbl";
-            cpuStatusLbl.Size = new Size(119, 220);
+            cpuStatusLbl.Size = new Size(119, 280);
             cpuStatusLbl.TabIndex = 6;
-            cpuStatusLbl.Text = "A:\r\nX:\r\nY:\r\nS:\r\nP:\r\nP:\r\nPC:\r\nStep:\r\nInstr:\r\nNextInstr:\r\nCycle:";
+            cpuStatusLbl.Text = "A:\r\nX:\r\nY:\r\nS:\r\nP:\r\nP:\r\nPC:\r\nStep:\r\nInstr:\r\nNextInstr:\r\nCycle:\r\nIRQ Line:\r\nNMI Line:\r\nRST Line:";
             // 
             // outputLbl
             // 
@@ -245,7 +245,7 @@
             // irqBtn
             // 
             irqBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            irqBtn.Location = new Point(654, 523);
+            irqBtn.Location = new Point(654, 485);
             irqBtn.Margin = new Padding(2);
             irqBtn.Name = "irqBtn";
             irqBtn.Size = new Size(112, 34);
@@ -257,7 +257,7 @@
             // nmiBtn
             // 
             nmiBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            nmiBtn.Location = new Point(654, 485);
+            nmiBtn.Location = new Point(654, 523);
             nmiBtn.Margin = new Padding(2);
             nmiBtn.Name = "nmiBtn";
             nmiBtn.Size = new Size(112, 34);
