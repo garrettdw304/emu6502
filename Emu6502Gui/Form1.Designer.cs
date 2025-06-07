@@ -59,16 +59,19 @@
             stopAtCB = new CheckBox();
             stopAtAddrTB = new TextBox();
             stepCB = new CheckBox();
+            groupBox5 = new GroupBox();
+            argStackLbl = new Label();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox4.SuspendLayout();
+            groupBox5.SuspendLayout();
             SuspendLayout();
             // 
             // continueBtn
             // 
             continueBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            continueBtn.Location = new Point(889, 561);
+            continueBtn.Location = new Point(1020, 561);
             continueBtn.Margin = new Padding(2);
             continueBtn.Name = "continueBtn";
             continueBtn.Size = new Size(112, 34);
@@ -80,7 +83,7 @@
             // cycleBtn
             // 
             cycleBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            cycleBtn.Location = new Point(889, 523);
+            cycleBtn.Location = new Point(1020, 523);
             cycleBtn.Margin = new Padding(2);
             cycleBtn.Name = "cycleBtn";
             cycleBtn.Size = new Size(112, 34);
@@ -126,7 +129,7 @@
             // clockRateTB
             // 
             clockRateTB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            clockRateTB.Location = new Point(889, 488);
+            clockRateTB.Location = new Point(1020, 488);
             clockRateTB.Margin = new Padding(2);
             clockRateTB.Name = "clockRateTB";
             clockRateTB.Size = new Size(112, 31);
@@ -137,7 +140,7 @@
             // 
             label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             label1.AutoSize = true;
-            label1.Location = new Point(899, 461);
+            label1.Location = new Point(1030, 461);
             label1.Margin = new Padding(2, 0, 2, 0);
             label1.Name = "label1";
             label1.Size = new Size(33, 25);
@@ -177,7 +180,7 @@
             groupBox2.Controls.Add(scrollToTB);
             groupBox2.Controls.Add(scrollToBtn);
             groupBox2.Controls.Add(memDisplay);
-            groupBox2.Location = new Point(401, 12);
+            groupBox2.Location = new Point(532, 12);
             groupBox2.Margin = new Padding(2);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new Padding(2);
@@ -214,9 +217,9 @@
             stackLbl.Location = new Point(6, 28);
             stackLbl.Margin = new Padding(2, 0, 2, 0);
             stackLbl.Name = "stackLbl";
-            stackLbl.Size = new Size(108, 400);
+            stackLbl.Size = new Size(100, 400);
             stackLbl.TabIndex = 13;
-            stackLbl.Text = "000 <- 0xF0\r\n000 <- SP\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000 <- 0xFF\r\n";
+            stackLbl.Text = "000 <-F0\r\n000 <-F1 S\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000 <-FF\r\n";
             // 
             // groupBox3
             // 
@@ -233,7 +236,7 @@
             // rstBtn
             // 
             rstBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            rstBtn.Location = new Point(654, 561);
+            rstBtn.Location = new Point(785, 561);
             rstBtn.Margin = new Padding(2);
             rstBtn.Name = "rstBtn";
             rstBtn.Size = new Size(112, 34);
@@ -245,7 +248,7 @@
             // irqBtn
             // 
             irqBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            irqBtn.Location = new Point(654, 485);
+            irqBtn.Location = new Point(785, 485);
             irqBtn.Margin = new Padding(2);
             irqBtn.Name = "irqBtn";
             irqBtn.Size = new Size(112, 34);
@@ -257,7 +260,7 @@
             // nmiBtn
             // 
             nmiBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            nmiBtn.Location = new Point(654, 523);
+            nmiBtn.Location = new Point(785, 523);
             nmiBtn.Margin = new Padding(2);
             nmiBtn.Name = "nmiBtn";
             nmiBtn.Size = new Size(112, 34);
@@ -345,8 +348,9 @@
             // 
             // stopAtCB
             // 
+            stopAtCB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             stopAtCB.AutoSize = true;
-            stopAtCB.Location = new Point(781, 528);
+            stopAtCB.Location = new Point(917, 524);
             stopAtCB.Name = "stopAtCB";
             stopAtCB.Size = new Size(98, 29);
             stopAtCB.TabIndex = 24;
@@ -355,7 +359,8 @@
             // 
             // stopAtAddrTB
             // 
-            stopAtAddrTB.Location = new Point(771, 563);
+            stopAtAddrTB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            stopAtAddrTB.Location = new Point(902, 563);
             stopAtAddrTB.Name = "stopAtAddrTB";
             stopAtAddrTB.Size = new Size(113, 31);
             stopAtAddrTB.TabIndex = 25;
@@ -363,19 +368,43 @@
             // 
             // stepCB
             // 
+            stepCB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             stepCB.AutoSize = true;
-            stepCB.Location = new Point(781, 493);
+            stepCB.Location = new Point(917, 490);
             stepCB.Name = "stepCB";
             stepCB.Size = new Size(73, 29);
             stepCB.TabIndex = 26;
             stepCB.Text = "Step";
             stepCB.UseVisualStyleBackColor = true;
             // 
+            // groupBox5
+            // 
+            groupBox5.Controls.Add(argStackLbl);
+            groupBox5.Location = new Point(400, 12);
+            groupBox5.Margin = new Padding(2);
+            groupBox5.Name = "groupBox5";
+            groupBox5.Padding = new Padding(2);
+            groupBox5.Size = new Size(128, 438);
+            groupBox5.TabIndex = 15;
+            groupBox5.TabStop = false;
+            groupBox5.Text = "Arg Stack";
+            // 
+            // argStackLbl
+            // 
+            argStackLbl.AutoSize = true;
+            argStackLbl.Location = new Point(5, 27);
+            argStackLbl.Margin = new Padding(2, 0, 2, 0);
+            argStackLbl.Name = "argStackLbl";
+            argStackLbl.Size = new Size(121, 400);
+            argStackLbl.TabIndex = 13;
+            argStackLbl.Text = "000 <-0000\r\n000 <-0001 S\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000\r\n000 <-7FFF\r\n";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1012, 606);
+            ClientSize = new Size(1143, 606);
+            Controls.Add(groupBox5);
             Controls.Add(stepCB);
             Controls.Add(stopAtCB);
             Controls.Add(stopAtAddrTB);
@@ -411,6 +440,8 @@
             groupBox3.PerformLayout();
             groupBox4.ResumeLayout(false);
             groupBox4.PerformLayout();
+            groupBox5.ResumeLayout(false);
+            groupBox5.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -447,5 +478,7 @@
         private CheckBox stopAtCB;
         private TextBox stopAtAddrTB;
         private CheckBox stepCB;
+        private GroupBox groupBox5;
+        private Label argStackLbl;
     }
 }

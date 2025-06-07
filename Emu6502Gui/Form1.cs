@@ -201,6 +201,7 @@ namespace Emu6502Gui
                 + "\nRST Line: " + (cpu.rst.Triggered ? "HIGH" : "LOW");
             UpdateMemDisplay();
             UpdateStackDisplay();
+            UpdateArgStackDisplay();
             emu.ResumeState();
         }
 
@@ -276,7 +277,7 @@ namespace Emu6502Gui
             if (cpu.s != 0)
             {
                 // Print the first line with an address indicator
-                sb.AppendLine($"{PeekMem(0x100 | lowestAddress).ToString().PadLeft(3, '0')} <- 0x{lowestAddress.ToString("X2")}");
+                sb.AppendLine($"{PeekMem(0x100 | lowestAddress).ToString().PadLeft(3, '0')} <-{lowestAddress.ToString("X2")}");
                 i++;
 
                 // Print lines before the address that the sp points to
@@ -284,11 +285,11 @@ namespace Emu6502Gui
                     sb.AppendLine(PeekMem(0x100 | i).ToString().PadLeft(3, '0'));
 
                 // Print the line that sp points to
-                sb.AppendLine($"{PeekMem(0x100 | i++).ToString().PadLeft(3, '0')} <- SP:{cpu.s.ToString("X2")}");
+                sb.AppendLine($"{PeekMem(0x100 | i++).ToString().PadLeft(3, '0')} <-{cpu.s.ToString("X2")} S");
             }
             else
             {
-                sb.AppendLine($"{PeekMem(0x100 | cpu.s).ToString().PadLeft(3, '0')} <- SP:00");
+                sb.AppendLine($"{PeekMem(0x100 | cpu.s).ToString().PadLeft(3, '0')} <-00 S");
                 i++;
             }
 
@@ -300,10 +301,71 @@ namespace Emu6502Gui
                     sb.AppendLine(PeekMem(0x100 | i).ToString().PadLeft(3, '0'));
 
                 // Print the last line with an address indicator
-                sb.AppendLine($"{PeekMem(0x100 | highestAddress).ToString().PadLeft(3, '0')} <- 0x{highestAddress.ToString("X2")}");
+                sb.AppendLine($"{PeekMem(0x100 | highestAddress).ToString().PadLeft(3, '0')} <-{highestAddress.ToString("X2")}");
             }
 
             stackLbl.Text = sb.ToString();
+        }
+
+        private void UpdateArgStackDisplay()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            int highestAddress;
+            int lowestAddress;
+            int sp = PeekMem(0) | (PeekMem(1) << 8);
+
+            if (sp > 0xFFF0) // we want to move the SP arrow around
+            {
+                lowestAddress = 0xFFF0;
+                highestAddress = 0xFFFF;
+            }
+            else // we want to move the memory range around
+            {
+                lowestAddress = sp - (sp == 0 ? 0 : 1);
+                highestAddress = lowestAddress + 0xF;
+            }
+
+            int i = lowestAddress;
+            if (sp != 0)
+            {
+                // Print the first line with an address indicator
+                sb.AppendLine($"{Peek(lowestAddress).PadLeft(3, '0')} <-{lowestAddress.ToString("X4")}");
+                i++;
+
+                // Print lines before the address that the sp points to
+                for (; i < sp; i++)
+                    sb.AppendLine(Peek(i).PadLeft(3, '0'));
+
+                // Print the line that sp points to
+                sb.AppendLine($"{Peek(i++).PadLeft(3, '0')} <-{sp.ToString("X4")} S");
+            }
+            else
+            {
+                sb.AppendLine($"{Peek(sp).PadLeft(3, '0')} <-0000 S");
+                i++;
+            }
+
+            // If sp points to the last line, dont print any more lines, else finish up
+            if (sp != highestAddress)
+            {
+                // Print remaining middle lines
+                for (; i < highestAddress; i++)
+                    sb.AppendLine(Peek(i).PadLeft(3, '0'));
+
+                // Print the last line with an address indicator
+                sb.AppendLine($"{Peek(highestAddress).PadLeft(3, '0')} <-{highestAddress.ToString("X4")}");
+            }
+
+            argStackLbl.Text = sb.ToString();
+
+            string Peek(int address)
+            {
+                int value = PeekMem(address);
+                if (value == -1)
+                    return "XXX";
+                return value.ToString().PadLeft(3, '0');
+            }
         }
 
         private static bool TryParseUShort(string str, out ushort value)
