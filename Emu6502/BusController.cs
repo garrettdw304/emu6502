@@ -50,7 +50,7 @@ namespace Emu6502
         /// Called on the rising edge of the clock, after the cpu has prepared
         /// the control lines such as rwb, address, and possibly data.
         /// </summary>
-        public event Action<IDeviceInterface>? OnCycle;
+        private event Action<IDeviceInterface>? OnCycle;
 
         private byte data;
         private bool dataHiZ;
@@ -155,6 +155,16 @@ namespace Emu6502
             this.data = data;
             Cycle();
         }
+
+        public void AddDevice(IDevice device)
+        {
+            OnCycle += device.OnCycle;
+        }
+
+        public void RemoveDevice(IDevice device)
+        {
+            OnCycle -= device.OnCycle;
+        }
     }
 
     public interface IDeviceInterface
@@ -168,8 +178,6 @@ namespace Emu6502
         public ushort Address { get; }
         public byte Data { get; set; }
         public int Hz { get; }
-
-        public event Action<IDeviceInterface>? OnCycle;
     }
 
 

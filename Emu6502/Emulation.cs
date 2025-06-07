@@ -19,7 +19,7 @@ namespace Emu6502
         /// A CPU should subscribe to this event.
         /// <br/>int - The hz that the clock is running at.
         /// </summary>
-        public event Action<int>? OnCycle;
+        private event Action<int>? OnCycle;
 
         /// <summary>
         /// Called when the emulation stops. Does not get called when using Cycle.
@@ -193,6 +193,16 @@ namespace Emu6502
         public void ResumeState()
         {
             stateAccessSem.Release();
+        }
+
+        public void AddMachine(IMachine machine)
+        {
+            OnCycle += machine.Cycle;
+        }
+
+        public void RemoveMachine(IMachine machine)
+        {
+            OnCycle -= machine.Cycle;
         }
 
         /// <summary>

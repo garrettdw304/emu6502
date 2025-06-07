@@ -6,7 +6,7 @@
     /// and address lines. The reset is simply held for one cycle instead of monitoring the CPU because the CPU
     /// will handle reset signals no matter the current state.
     /// </summary>
-    public class PushButtonInterruptors
+    public class PushButtonInterruptors : IDevice
     {
         private bool triggerIrq;
         private bool triggerNmi;

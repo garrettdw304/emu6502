@@ -1,6 +1,6 @@
 ﻿namespace Emu6502
 {
-    public partial class Cpu
+    public partial class Cpu : IMachine
     {
         private const byte N_MASK = 0b1000_0000;
         private const byte V_MASK = 0b0100_0000;

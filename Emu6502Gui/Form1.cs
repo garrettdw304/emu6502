@@ -49,13 +49,13 @@ namespace Emu6502Gui
 
             // Create emulated cpu
             cpu = new Cpu();
-            emu.OnCycle += cpu.Cycle;
+            emu.AddMachine(cpu);
 
             // Create other emulated machines
             const string path = "serialDrive/";
             Directory.CreateDirectory(path);
             serialDrive = new SerialDrive(1_440_000, path);
-            emu.OnCycle += serialDrive.OnCycle;
+            emu.AddMachine(serialDrive);
 
             // Create devices
             ram = new Ram(RAM_BASE_ADDRESS, RAM_SIZE);
@@ -69,13 +69,13 @@ namespace Emu6502Gui
             pbi = new PushButtonInterruptors(cpu.irq, cpu.nmi, cpu.rst);
 
             // Connect devices
-            cpu.bc.OnCycle += uart.OnCycle;
-            cpu.bc.OnCycle += driveUart.OnCycle;
-            cpu.bc.OnCycle += ram.OnCycle;
-            cpu.bc.OnCycle += timer.OnCycle;
-            cpu.bc.OnCycle += graphicsChip.OnCycle;
-            cpu.bc.OnCycle += rom.OnCycle;
-            cpu.bc.OnCycle += pbi.OnCycle;
+            cpu.bc.AddDevice(uart);
+            cpu.bc.AddDevice(driveUart);
+            cpu.bc.AddDevice(ram);
+            cpu.bc.AddDevice(timer);
+            cpu.bc.AddDevice(graphicsChip);
+            cpu.bc.AddDevice(rom);
+            cpu.bc.AddDevice(pbi);
 
             arguments = new CommandArguments(Environment.CommandLine);
             if (arguments.romFilePath != null)

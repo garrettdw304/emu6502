@@ -5,7 +5,7 @@ namespace Emu6502
     /// <summary>
     /// Implements a drive which manages a file system and allows access to it over a serial interface. See devices such as the Commadore 1541 etc.
     /// </summary>
-    public class SerialDrive
+    public class SerialDrive : IMachine
     {
         private const byte START_COMMAND = (byte)'>';
         private const byte END_COMMAND = (byte)'<';
@@ -70,7 +70,7 @@ namespace Emu6502
             command = commandStateMachines[READ_COMMAND];
         }
 
-        public void OnCycle(int hz)
+        public void Cycle(int hz)
         {
             stateHandlers[state]();
         }

@@ -1,6 +1,6 @@
 ﻿namespace Emu6502
 {
-    public abstract class Device
+    public abstract class Device : IDevice
     {
         public readonly ushort baseAddress;
         
