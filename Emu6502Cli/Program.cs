@@ -7,8 +7,7 @@ namespace Emu6502Cli
     {
         static void Main(string[] args)
         {
-            //RunKlausTests();
-            RunDeltaTests2(1_000_000, 1000, 10000);
+
         }
 
         /// <summary>
@@ -19,12 +18,12 @@ namespace Emu6502Cli
         {
             Emulation emu = new Emulation();
             Cpu cpu = new Cpu();
-            emu.OnCycle += cpu.Cycle;
+            emu.AddMachine(cpu);
             Rom rom = new Rom(0, 65536);
             byte[] romData = new byte[65536];
             Array.Fill(romData, (byte)0xEA); // NOP
             rom.Program(romData);
-            cpu.bc.OnCycle += rom.OnCycle;
+            cpu.bc.AddDevice(rom);
 
             for (int i = startMillionCycles; i <= endMillionCycles; i++)
             {
@@ -48,10 +47,10 @@ namespace Emu6502Cli
             {
                 Emulation emu = new Emulation();
                 Cpu cpu = new Cpu();
-                emu.OnCycle += cpu.Cycle;
+                emu.AddMachine(cpu);
                 Rom rom = new Rom(0, 65536);
                 rom.Program("C:\\Users\\garre\\Downloads\\6502_65C02_functional_tests-master\\6502_functional_test.bin");
-                cpu.bc.OnCycle += rom.OnCycle;
+                cpu.bc.AddDevice(rom);
 
                 Console.WriteLine("Starting test for ~" + i + " milliseconds.");
                 Stopwatch ss = Stopwatch.StartNew();
@@ -72,11 +71,11 @@ namespace Emu6502Cli
         {
             Emulation emu = new Emulation();
             Cpu cpu = new Cpu();
-            emu.OnCycle += cpu.Cycle;
+            emu.AddMachine(cpu);
 
             Ram ram = new Ram(0, 65536); // zero page and stack page
             ram.Program(File.ReadAllBytes("C:\\Users\\garre\\Downloads\\6502_65C02_functional_tests-master\\6502_functional_test.bin"), 0x000a);
-            cpu.bc.OnCycle += ram.OnCycle;
+            cpu.bc.AddDevice(ram);
 
             cpu.pc = 0x400;
             cpu.step = -1; // NEXT_OPCODE_STEP, cause a new opcode to be loaded on next cycle
