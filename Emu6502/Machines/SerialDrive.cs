@@ -17,9 +17,12 @@ namespace Emu6502
         private const byte INFO_COMMAND = (byte)'i';
         private const byte LIST_COMMAND = (byte)'l';
         private const byte STATUS_COMMAND = (byte)'s';
+        private const byte RENAME_COMMAND = (byte)'m';
 
         public const byte ACK = (byte)'A';
         public const byte NAK = (byte)'N';
+
+        private const int MAX_FILE_NAME_SIZE = 15;
 
         private readonly SerialInterface port = new SerialInterface();
         private readonly Dictionary<State, Action> stateHandlers;
@@ -65,6 +68,7 @@ namespace Emu6502
                 { INFO_COMMAND, new InfoSM(this, port) },
                 { LIST_COMMAND, new ListSM(this, port) },
                 { STATUS_COMMAND, new StatusSM(this, port) },
+                { RENAME_COMMAND, new RenameSM(this, port) },
             };
 
             command = commandStateMachines[READ_COMMAND];
@@ -237,7 +241,7 @@ namespace Emu6502
             if (fileDir == null)
                 return null;
             DirectoryInfo driveDir = new DirectoryInfo(DrivePath);
-            if (fileDir.FullName.TrimEnd('\\').TrimEnd('/') != driveDir.FullName.TrimEnd('\\').TrimEnd('/') || Path.GetFileName(fileName).Length > 15)
+            if (fileDir.FullName.TrimEnd('\\').TrimEnd('/') != driveDir.FullName.TrimEnd('\\').TrimEnd('/') || Path.GetFileName(fileName).Length > MAX_FILE_NAME_SIZE)
                 return null;
             else
                 return fileName;
